@@ -2054,7 +2054,7 @@ function bossUpdate(e,dt){
   const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;
   if(e.dizzy>0)e.dizzy-=dt;if(e.pose>0)e.pose-=dt;
   if(e.bs==='move'){
-    if(D.aggro&&Math.hypot(P.x-e.sx,P.y-e.sy)>D.aggro){const hx=e.sx-e.x,hy=e.sy-e.y,hd=Math.hypot(hx,hy);if(hd>4){if(D.move==='fly'){e.x+=hx/hd*e.spd*dt;e.y+=hy/hd*e.spd*dt}else moveEnt(e,hx/hd*e.spd*.7*dt,hy/hd*e.spd*.7*dt,e.r*.8)}return}
+    if(!e.eng&&D.aggro&&Math.hypot(P.x-e.sx,P.y-e.sy)>D.aggro){const hx=e.sx-e.x,hy=e.sy-e.y,hd=Math.hypot(hx,hy);if(hd>4){if(D.move==='fly'){e.x+=hx/hd*e.spd*dt;e.y+=hy/hd*e.spd*dt}else moveEnt(e,hx/hd*e.spd*.7*dt,hy/hd*e.spd*.7*dt,e.r*.8)}return}
     e.atkT-=dt;e.megaT-=dt;
     if(D.move==='walk'){if(d>D.keep)moveEnt(e,dx/d*e.spd*dt,dy/d*e.spd*dt,e.r*.8)}
     else{const an=time*1.3,tx=P.x+Math.cos(an)*120,ty=P.y+Math.sin(an)*85,ex=tx-e.x,ey=ty-e.y,ed=Math.hypot(ex,ey)||1;e.x+=ex/ed*e.spd*dt;e.y+=ey/ed*e.spd*dt}
@@ -2373,7 +2373,7 @@ function render(){if(inside&&P){renderInterior();if(joy){ctx.strokeStyle='#fffff
 function bossZone(e){if(e.type==='fish')return{x:T(POND.x),y:T(POND.y),r:230,tr:{x:SHORE.x,y:SHORE.y,r:110}};const D=BOSSDEF[e.type];return{x:e.sx,y:e.sy,r:D.aggro+40,tr:{x:e.sx,y:e.sy,r:D.aggro}}}
 function bossEligible(e){if(e.type==='fish')return Q.s===1&&Q.fishIntro&&!Q.fishOn;return e.alive&&(!e.cond||e.cond())}
 function engageBoss(e){P.arOk={x:P.x,y:P.y};Q.bw=Q.bw||{};if(e.type==='fish'){Q.fishOn=true;e.hp=e.maxHp;e.sub=true;e.mode=null;e.x=T(POND.x);e.y=T(POND.y);syncBosses()}
-  e.eng=true;e.bs='move';shake=.35;sfx('thud');puff(e.x,e.y-20,22,['#c0cbdc','#8b9bb4','#f4f4f4'],160,.7,-20,3);floats.push({x:e.x,y:e.y-70,txt:N(e.type)+'!',col:'#e43b44',t:1.4,big:true})}
+  e.eng=true;e.bs=null;e.cur=null;e.zone=null;shake=.35;sfx('thud');puff(e.x,e.y-20,22,['#c0cbdc','#8b9bb4','#f4f4f4'],160,.7,-20,3);floats.push({x:e.x,y:e.y-70,txt:N(e.type)+'!',col:'#e43b44',t:1.4,big:true})}
 let bossAskCd=0;
 function arenaSet(e){const Z=bossZone(e),key=Q.s+'|'+(Q.fire?1:0);if(e._ar&&e._ar.key===key)return e._ar.set;
   const st=e.type==='fish'?SHORE:{x:e.sx,y:e.sy},sx=Math.floor(st.x/TS),sy=Math.floor(st.y/TS),set=new Set([sx+','+sy]),q=[[sx,sy]];
@@ -3158,7 +3158,7 @@ function doNew(){auInit();try{localStorage.removeItem(SKEY)}catch(e){}$('confirm
 $('newBtn').onclick=()=>{const sv=load();if(!sv){doNew();return}$('confirmTxt').textContent=`Turi išsaugotą žaidimą (Lv ${sv.P.lvl}, žaista ~${Math.round((sv.Q.play||0)/60)} min). Pradėjus iš naujo, jis bus ištrintas visam laikui.`;$('confirmOv').style.display='flex'};
 $('confYes').onclick=doNew;$('confNo').onclick=()=>{$('confirmOv').style.display='none'};
 requestAnimationFrame(loop);
-const GAME_VER='1.3.4';
+const GAME_VER='1.3.5';
 document.addEventListener('contextmenu',e=>{if(!/INPUT|TEXTAREA/.test(e.target.tagName))e.preventDefault()});document.addEventListener('selectstart',e=>{if(!/INPUT|TEXTAREA/.test(e.target.tagName))e.preventDefault()});document.querySelectorAll('img').forEach(i=>i.draggable=false);
 $('verTxt').textContent='Versija '+GAME_VER;
 const onPages=/github\.io$/.test(location.hostname);
