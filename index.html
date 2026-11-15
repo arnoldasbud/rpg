@@ -1683,9 +1683,9 @@ function renderInv(){
   const L=invTab==='use'?U:invTab==='quest'?QI:C;
   document.querySelectorAll('#invTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.it===invTab);const n=b.dataset.it==='quest'?QI.length:0;b.textContent=({use:'Naudojami',quest:'Užduočių'+(n?' ('+n+')':''),col:'Lobiai',gear:'Ekipuotė'+(gearG().inv.length?' ('+gearG().inv.length+')':'')})[b.dataset.it]});
   let h='';if(!L.length)h='<div class="small" style="padding:14px 0;text-align:center">Šiuo metu užduočių daiktų nėra.</div>';
-  for(const[ic,n,q,d,use,read,camp]of L)h+=`<div class="inv"><img src="${ICON[ic]}"><div class="d"><b>${n} <span class="q">${q}</span></b><span>${d}</span></div>${use?`<button class="big" style="width:auto;margin:0" data-use="${use}">Naudoti</button>`:''}${read?'<button class="big" style="width:auto;margin:0" data-read="1">Skaityti</button>':''}${camp?'<button class="big" style="width:auto;margin:0" data-camp="1">Kurti</button>':''}</div>`;
+  for(const[ic,n,q,d,use,read,camp]of L)h+=`<div class="inv"><img src="${ICON[ic]}"><div class="d"><b>${n} <span class="q">${q}</span></b><span>${d}</span></div>${use?`<span style="display:flex;gap:4px"><button class="big" style="width:auto;margin:0" data-use="${use}">Naudoti</button>${FOODS[use]?`<button class="big" style="width:auto;margin:0;padding:6px 8px;${(P.qfood||'herb')===use?'background:#feae34':''}" data-qf="${use}" title="Į greitąjį mygtuką">★</button>`:''}</span>`:''}${read?'<button class="big" style="width:auto;margin:0" data-read="1">Skaityti</button>':''}${camp?'<button class="big" style="width:auto;margin:0" data-camp="1">Kurti</button>':''}</div>`;
   $('invRows').innerHTML=h;
-  $('invRows').querySelectorAll('[data-use]').forEach(u=>u.onclick=()=>{useFood(u.dataset.use);renderInv()});
+  $('invRows').querySelectorAll('[data-use]').forEach(u=>u.onclick=()=>{useFood(u.dataset.use);renderInv()});$('invRows').querySelectorAll('[data-qf]').forEach(u=>u.onclick=()=>{P.qfood=u.dataset.qf;sfx('blip');save();renderInv()});
   const cb=$('invRows').querySelector('[data-camp]');if(cb)cb.onclick=()=>{closeInv();makeCamp()};
   const r=$('invRows').querySelector('[data-read]');if(r)r.onclick=()=>{closeInv();say(SCROLL_TXT.slice(0,Q.scrolls).map((t,i)=>['Senelio užrašas '+(i+1),t]))};
 }
@@ -1973,7 +1973,7 @@ function foodAmt(f,k){const a=f[k];if(!a)return 0;return Math.round((k==='hp'?P.
 function foodDesc(id){const f=FOODS[id],a=[];if(f.hp)a.push(id==='senzu'?'visos HP':'+'+foodAmt(f,'hp')+' HP');if(f.ki)a.push(id==='senzu'?'visas ki':'+'+foodAmt(f,'ki')+' ki');return a.join(', ')}
 function useFood(id){id=id||P.qfood||'herb';const f=FOODS[id];if(!f)return;if(foodN(id)<=0){addFloat(P.x,P.y-26,'Nėra: '+f.n,'#ccc');return}
   const needHp=f.hp&&P.hp<P.maxHp,needKi=f.ki&&P.ki<P.maxKi;if(!needHp&&!needKi){addFloat(P.x,P.y-26,f.hp?'Sveikata pilna':'Ki pilnas','#ccc');return}
-  if(id==='herb')Q.herbs--;else Q.food[id]--;P.qfood=id;sfx('heal');
+  if(id==='herb')Q.herbs--;else Q.food[id]--;sfx('heal');
   if(f.hp){const v=foodAmt(f,'hp');P.hp=Math.min(P.maxHp,P.hp+v);addFloat(P.x,P.y-26,'+'+v+' HP','#7CFC00')}
   if(f.ki){const v=foodAmt(f,'ki');P.ki=Math.min(P.maxKi,P.ki+v);addFloat(P.x,P.y-40,'+'+v+' ki','#7cc8ff')}save()}
 function foodDropFor(e){const t=e.type,hum=BUILTIN[t]&&BUILTIN[t].human;if(Math.random()<.02*(1+st('lck')*.05))return'senzu';
@@ -1983,7 +1983,7 @@ function useHerbOld(){if(Q.herbs<=0){addFloat(P.x,P.y-26,'Nėra žolelių','#ccc
 
 /* ================= INPUT ================= */
 const keys={};let joy=null;const btn={A:false,B:false};
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;if(dlg&&(k===' '||k==='e'||k==='enter'||k==='j')){advDlg();return}if(paused())return;if(e.repeat)return;if(k==='j'){pressA();return}if(k==='k'){pressB();return}if(k==='e')interact();if(k==='h')useHerb();if(k==='f')makeCamp();if(k==='l')fireKame();if(k==='q')cycleB();if(k==='i'){openInv();return}if(k==='c'){$('menuBtn').onclick();return}if(k==='m')$('mapBtn').onclick()});
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;if(dlg&&(k===' '||k==='e'||k==='enter'||k==='j')){advDlg();return}if(paused())return;if(e.repeat)return;if(k==='j'){pressA();return}if(k==='k'){pressB();return}if(k==='e')interact();if(k==='h')useHerb();if(k==='f')makeCamp();if(k==='l')fireKame();if(k==='q')cycleB();if(k==='g')cycleFood();if(k==='i'){openInv();return}if(k==='c'){$('menuBtn').onclick();return}if(k==='m')$('mapBtn').onclick()});
 addEventListener('keyup',e=>{const k=e.key.toLowerCase();keys[k]=false;if(k==='j')releaseA();if(k==='k')releaseB()});
 cv.addEventListener('pointerdown',e=>{e.preventDefault();if(dlg){advDlg();return}if(e.clientX<W*.6&&!joy)joy={id:e.pointerId,ox:e.clientX,oy:e.clientY,x:e.clientX,y:e.clientY}});
 cv.addEventListener('pointermove',e=>{if(joy&&e.pointerId===joy.id){joy.x=e.clientX;joy.y=e.clientY}});
@@ -1993,7 +1993,9 @@ function bindBtn(id,down,up){const el=$(id);el.addEventListener('pointerdown',e=
 bindBtn('bA',pressA,releaseA);
 bindBtn('bB',pressB,releaseB);
 bindBtn('bE',()=>{if(dlg)advDlg();else if(!paused())interact()});
-bindBtn('bH',()=>{if(!paused())useHerb()});
+let hLong=null,hDid=false;
+function cycleFood(){const av=FOOD_ORDER.filter(id=>foodN(id)>0);if(!av.length){addFloat(P.x,P.y-26,'Maisto neturi','#ccc');return}const i=av.indexOf(P.qfood||'herb');P.qfood=av[(i+1)%av.length];sfx('blip');addFloat(P.x,P.y-34,'★ '+FOODS[P.qfood].n,'#feae34')}
+bindBtn('bH',()=>{hDid=false;clearTimeout(hLong);hLong=setTimeout(()=>{if(!paused()){hDid=true;cycleFood()}},450)},()=>{clearTimeout(hLong);if(!hDid&&!paused())useHerb()});
 
 /* ================= UPDATE ================= */
 function follow(o,tx,ty,dt,spd){const dx=tx-o.x,dy=ty-o.y,d=Math.hypot(dx,dy);if(d>260&&o!==TU){o.x=tx;o.y=ty;return false}if(d>30){const ox=o.x,oy=o.y;moveEnt(o,dx/d*Math.min(spd,d*3)*dt,dy/d*Math.min(spd,d*3)*dt,8);o.wd=(o.wd||0)+Math.hypot(o.x-ox,o.y-oy);o.fx=dx/d;o.fy=dy/d;return true}return false}
@@ -2208,7 +2210,7 @@ const SCROLL_TXT=['„Tikras stiprumas – ne raumenyse, o širdyje. Kovok tik t
 function pickup(it){
   sfx('pickup');
   if(it.kind==='herb'){Q.herbs=Math.min(30,Q.herbs+1);addFloat(P.x,P.y-24,'+1 žolelė','#63c74d');return}
-  if(it.kind==='food'){foodAdd(it.fid,1);addFloat(P.x,P.y-24,'+1 '+FOODS[it.fid].n,'#63c74d');if(!Q.foodTip){Q.foodTip=1;pendingMsg.push([['Patarimas','Radai maisto! Jis atstato HP arba ki. Naudok: Inventorius → Naudojami. Paskutinis naudotas maistas atsiduria greitajame mygtuke (H).']])}return}
+  if(it.kind==='food'){foodAdd(it.fid,1);addFloat(P.x,P.y-24,'+1 '+FOODS[it.fid].n,'#63c74d');if(!Q.foodTip){Q.foodTip=1;pendingMsg.push([['Patarimas','Radai maisto! Jis atstato HP arba ki. Naudok: Inventorius → Naudojami. Spausk ★ prie maisto – jis atsidurs greitajame mygtuke. Arba palaikyk greitąjį mygtuką – jis perjungs maisto rūšį.']])}return}
   if(it.kind==='gear'){pickGear(it);return}
   if(it.kind==='qitem'){const s=wstep();if(s&&s.t==='take')advanceW();return}
   Q.got.push(it.id);
@@ -3138,7 +3140,7 @@ function doNew(){auInit();try{localStorage.removeItem(SKEY)}catch(e){}$('confirm
 $('newBtn').onclick=()=>{const sv=load();if(!sv){doNew();return}$('confirmTxt').textContent=`Turi išsaugotą žaidimą (Lv ${sv.P.lvl}, žaista ~${Math.round((sv.Q.play||0)/60)} min). Pradėjus iš naujo, jis bus ištrintas visam laikui.`;$('confirmOv').style.display='flex'};
 $('confYes').onclick=doNew;$('confNo').onclick=()=>{$('confirmOv').style.display='none'};
 requestAnimationFrame(loop);
-const GAME_VER='1.3.1';
+const GAME_VER='1.3.2';
 $('verTxt').textContent='Versija '+GAME_VER;
 const onPages=/github\.io$/.test(location.hostname);
 async function checkUpdate(manual){
