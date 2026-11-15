@@ -1377,7 +1377,11 @@ function npcHit(n){const ty=npcType(n);npcSay(n,NPC_HIT[ty]||['Ei!']);n.hop=.35;
   if(ty==='chick')puff(n.x,n.y-6,8,['#f4f4f4','#e8e8f0'],90,.7,120,2);if(ty==='cat')puff(n.x,n.y-8,4,['#f0a040'],60,.4,0,2)}
 function blockers(){const L=[];if(W1()&&Q.s>=3){L.push({x:CAR.x-22,y:CAR.y,r:16},{x:CAR.x+2,y:CAR.y,r:16},{x:CAR.x+24,y:CAR.y,r:14})}if(W1()&&Q.s>=5)L.push({x:CAMP.x,y:CAMP.y+4,r:13});if(Q.pcamp)L.push({x:Q.pcamp.x,y:Q.pcamp.y+4,r:12});
   for(const e of enemies){if(e.ai!=='none')continue;if(e.type==='drytree'){if(e.cond&&!e.cond())continue;L.push({x:e.x,y:e.y+4,r:11})}else if(e.alive&&(!e.cond||e.cond()))L.push({x:e.x,y:e.y+4,r:e.type==='rock'?16:10})}
-  for(const it of items)L.push({x:it.x,y:it.y+2,r:8});return L}
+  for(const it of items)L.push({x:it.x,y:it.y+2,r:8});
+  if(W1()){if(!villagersHome()){L.push({x:WC.x,y:WC.y,r:11},{x:HB.x,y:HB.y,r:10})}if(Q.s>=8&&!escort())L.push({x:TU.x,y:TU.y+2,r:16});if(Q.s>=12)L.push({x:RO.x,y:RO.y,r:10})}
+  return L}
+function pushFromEnemies(o,r){for(const e of enemies){if(!e.alive||e.ai==='none'||e.dying>0||(e.cond&&!e.cond())||e.sub||e.jh>0||e.ai==='bat'||e.fly||e.air)continue;const er=Math.max(8,(e.r||12)*.6),dx=o.x-e.x,dy=o.y-e.y,d=Math.hypot(dx,dy)||.01,m=r+er;if(d<m)moveEnt(o,dx/d*(m-d),dy/d*(m-d),9)}}
+function softPush(f,r){const dx=f.x-P.x,dy=f.y-P.y,d=Math.hypot(dx,dy)||.01,m=r+9;if(d<m)moveEnt(f,dx/d*(m-d),dy/d*(m-d),8)}
 function pushFromBlockers(o,r){for(const b of blockers()){const dx=o.x-b.x,dy=o.y-b.y,d=Math.hypot(dx,dy)||.01,m=r+b.r;if(d<m)moveEnt(o,dx/d*(m-d),dy/d*(m-d),9)}}
 function pushFromNPCs(o,r){for(const n of NPCS){if(!npcVisible(n))continue;const dx=o.x-n.x,dy=o.y-n.y,d=Math.hypot(dx,dy)||.01,m=r+npcRad(n);if(d<m){const k=(m-d);moveEnt(o,dx/d*k,dy/d*k,9);if(o===P){n.bumpT=(n.bumpT||0)+1/60;if(n.bumpT>.5&&!(n.bub&&n.bub.t>0)&&time-(n.lastBump||-9)>4){n.lastBump=time;n.bumpT=0;npcSay(n,NPC_BUMP[npcType(n)]||['Ei!'])}}}}}
 function spawnNPCs(){if(!W1()){spawnNPCsW();return}NPCS=NPC_DEF.map(d=>({...d,x:T(d.at[0]),y:T(d.at[1]),hx:T(d.at[0]),hy:T(d.at[1]),fx:0,fy:1,tg:null,wt:Math.random()*2,mv:false,li:0}))}
@@ -2193,7 +2197,7 @@ function update(dt){if(inside&&P){time+=dt;if(flash>0)flash-=dt;for(const f of f
   tMoving=escort()&&follow(TU,P.x-P.fx*40,P.y-P.fy*40,dt,72);
 
   for(const e of enemies)updEnemy(e,dt);
-  updateNPCs(dt);pushFromNPCs(P,9);pushFromBlockers(P,9);if(bulmaVisible()){pushFromNPCs(B,8);pushFromBlockers(B,8)}
+  updateNPCs(dt);pushFromNPCs(P,9);pushFromBlockers(P,9);pushFromEnemies(P,9);if(bulmaVisible()){pushFromNPCs(B,8);pushFromBlockers(B,8);softPush(B,8)}if(W1()&&escort())softPush(TU,14);
 
   if(W1()&&onMountainPath()&&Q.s>=7){rockT-=dt;if(rockT<=0){rockT=1.4;hazards.push({x:P.x+P.fx*50+ri(-30,30),y:P.y+P.fy*50+ri(-30,30),t:1.1,dmg:21})}}
   for(const h of hazards){h.t-=dt;if(h.t<=0&&!h.done){h.done=true;h.boom=.35;if(Math.hypot(P.x-h.x,P.y-h.y)<260)sfx('thud');if(Math.hypot(P.x-h.x,P.y-h.y)<24)hitPlayer(h.dmg)}else if(h.done)h.boom-=dt}
@@ -3158,7 +3162,7 @@ function doNew(){auInit();try{localStorage.removeItem(SKEY)}catch(e){}$('confirm
 $('newBtn').onclick=()=>{const sv=load();if(!sv){doNew();return}$('confirmTxt').textContent=`Turi išsaugotą žaidimą (Lv ${sv.P.lvl}, žaista ~${Math.round((sv.Q.play||0)/60)} min). Pradėjus iš naujo, jis bus ištrintas visam laikui.`;$('confirmOv').style.display='flex'};
 $('confYes').onclick=doNew;$('confNo').onclick=()=>{$('confirmOv').style.display='none'};
 requestAnimationFrame(loop);
-const GAME_VER='1.3.5';
+const GAME_VER='1.3.6';
 document.addEventListener('contextmenu',e=>{if(!/INPUT|TEXTAREA/.test(e.target.tagName))e.preventDefault()});document.addEventListener('selectstart',e=>{if(!/INPUT|TEXTAREA/.test(e.target.tagName))e.preventDefault()});document.querySelectorAll('img').forEach(i=>i.draggable=false);
 $('verTxt').textContent='Versija '+GAME_VER;
 const onPages=/github\.io$/.test(location.hostname);
