@@ -694,6 +694,7 @@ function genMap(){
   blob(70,6,6.5,3.2,.25,73,(x,y)=>set(x,y,NEST));NESTC={x:T(70),y:T(6)};
   blob(58,17,2.6,1.8,.2,75,(x,y)=>set(x,y,GRASS));blob(69,16,3,1.8,.2,77,(x,y)=>set(x,y,GRASS));
   HOUSES=[{kind:'hut',x0:6,y0:3,w:5,h:4},{kind:'cottageW',x0:33,y0:17,w:5,h:4},{kind:'cottageH',x0:40,y0:17,w:5,h:4},{kind:'cottageR',x0:47,y0:17,w:5,h:4},{kind:'cottageB',x0:36,y0:26,w:5,h:4}];
+  road([[58,17],[59,20],[60,23]],.8,PATH);
   // tiger den
   DEN={x:T(55),y:T(46)};blob(55,46,4.8,4.2,.25,81,(x,y)=>set(x,y,ROCK));blob(55,46,3.4,2.9,.2,83,(x,y)=>set(x,y,CAVEF));
   // roads
@@ -730,7 +731,7 @@ function genMap(){
   GATES.bridge=[];for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)if(map[y][x]===BRIDGE&&x<30)GATES.bridge.push([x,y]);
   ensureReach();
   DOME=null;updateDome();
-  applyGates();
+  applyGates();buildGateTiles();
 }
 function ensureReach(){
   const key=[[8,9],[8,17],[SHORE.x/TS|0,17],[44,24],[35,22],[42,22],[49,22],[38,31],[49,33],[40,40],[36,45],[39,48],[40,coastY(40)-1],[55,46],[70,6],[13,9],[15,10],[13,12],[16,7],...COLLECT.wood,...COLLECT.mush,...COLLECT.scroll,...ROCKS];
@@ -756,10 +757,21 @@ const REGIONS=[
   {test:(x,y)=>x>=T(53)&&y<T(24),ok:()=>Q.s>=7,msg:()=>'Kalnų perėja stati ir pavojinga. Kol kas ten nėra ko ieškoti.'},
   {test:(x,y)=>y>T(43.5)&&y<T(51)&&x>T(26)&&x<T(52),ok:()=>Q.s>=8,msg:()=>Q.s<6?'Gilusis miškas pernelyg tankus ir pavojingas. Dar ne laikas.':'Bulma: „Ne ten! Pirma – reikalų turim kitur.“ (Atsidarys vėliau)'},
   {test:(x,y)=>y>=T(51)&&x>T(26),ok:()=>Q.s>=11,msg:()=>'Kelią į pajūrį saugo kažkas didelio... Pirma įveik miško pavojų.'}];
-let gateMsgT=0;
-function gateBlock(x,y){if(inside||!Q)return null;if(!W1())return gateBlockW(x,y);for(const R of REGIONS)if(R.test(x,y)&&!R.ok())return R;return null}
+let gateMsgT=0,GATES2=[];const GATE_SET=new Map();
+function gateDefs(){if(W1())return[
+  {r:[57,0,79,25],ok:()=>Q.s>=7,t:BOULDER,msg:()=>'Kalnų perėją užvertė rieduliai. Kol kas ten nėra ko ieškoti.'},
+  {r:[27,44,51,50],ok:()=>Q.s>=8,t:LOG,msg:()=>Q.s<6?'Gilusis miškas užverstas išvirtusiais medžiais. Dar ne laikas.':'Bulma: „Ne ten! Pirma – reikalų turim kitur.“'},
+  {r:[27,51,79,59],ok:()=>Q.s>=11,t:LOG,msg:()=>'Kelią į pajūrį užtvėrė išvirtę medžiai... Pirma įveik miško pavojų.'}];
+  return(curW().gates||[]).map(g=>({r:g.r,ok:()=>wq().st>=g.until,t:BOULDER,msg:()=>g.msg}))}
+function buildGateTiles(){GATES2=gateDefs();GATE_SET.clear();const walk=(x,y)=>map[y]&&map[y][x]!==undefined&&!SOLID.has(map[y][x]);
+  for(const g of GATES2){const[a,b,c,d]=g.r;g.tiles=[];const inR=(x,y)=>x>=a&&x<=c&&y>=b&&y<=d;
+    for(let y=Math.max(1,b);y<=Math.min(MH-2,d);y++)for(let x=Math.max(1,a);x<=Math.min(MW-2,c);x++){if(!walk(x,y))continue;if([[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>!inR(x+dx,y+dy)&&walk(x+dx,y+dy)))g.tiles.push([x,y,map[y][x]])}}
+  applyGateTiles()}
+function applyGateTiles(){let ch=false;GATE_SET.clear();for(const g of GATES2){const closed=!g.ok();for(const[x,y,o]of g.tiles){const want=closed?g.t:o;if(map[y][x]!==want){map[y][x]=want;ch=true}if(closed)GATE_SET.set(x+','+y,g)}}return ch}
+function refreshGates(){if(applyGateTiles())buildMapCache()}
+function gateBlock(x,y){return null}
 function canMove(x,y,r){return!solidAt(x-r,y-r)&&!solidAt(x+r,y-r)&&!solidAt(x-r,y+r)&&!solidAt(x+r,y+r)}
-function moveEnt(e,dx,dy,r){const pl=e===P;if(canMove(e.x+dx,e.y,r)&&!(pl&&gateBlock(e.x+dx,e.y)&&!gateBlock(e.x,e.y)))e.x+=dx;if(canMove(e.x,e.y+dy,r)&&!(pl&&gateBlock(e.x,e.y+dy)&&!gateBlock(e.x,e.y)))e.y+=dy;if(pl&&(dx||dy)&&tileAt(e.x+Math.sign(dx)*16,e.y+Math.sign(dy)*16)===BROKEN&&time-gateMsgT>3){gateMsgT=time;addFloat(e.x,e.y-48,'Tiltas sulūžęs! Kol kas per upę nepereisi.','#ffcf6a')}if(pl&&(dx||dy)){const R=gateBlock(e.x+Math.sign(dx)*14,e.y+Math.sign(dy)*14);if(R&&time-gateMsgT>3){gateMsgT=time;addFloat(e.x,e.y-48,R.msg(),'#ffcf6a')}}}
+function moveEnt(e,dx,dy,r){const pl=e===P;if(canMove(e.x+dx,e.y,r)&&!(pl&&gateBlock(e.x+dx,e.y)&&!gateBlock(e.x,e.y)))e.x+=dx;if(canMove(e.x,e.y+dy,r)&&!(pl&&gateBlock(e.x,e.y+dy)&&!gateBlock(e.x,e.y)))e.y+=dy;if(pl&&(dx||dy)&&tileAt(e.x+Math.sign(dx)*16,e.y+Math.sign(dy)*16)===BROKEN&&time-gateMsgT>3){gateMsgT=time;addFloat(e.x,e.y-48,'Tiltas sulūžęs! Kol kas per upę nepereisi.','#ffcf6a')}if(pl&&(dx||dy)){const tx=Math.floor((e.x+Math.sign(dx)*16)/TS),ty=Math.floor((e.y+Math.sign(dy)*16)/TS),R=GATE_SET.get(tx+','+ty);if(R&&time-gateMsgT>3){gateMsgT=time;addFloat(e.x,e.y-48,R.msg(),'#ffcf6a')}}}
 
 /* ================= BUILDINGS & VEHICLE SPRITES (original pixel art) ================= */
 function hutSheet(){return mkSheet(82,80,1,1,(A)=>{const{R,P,E}=A;
@@ -1411,7 +1423,7 @@ $('dialog').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagat
 
 /* ================= STORY ================= */
 const G=()=>N('hero'),BU=()=>N('bulma'),RS=()=>N('roshi'),TT=()=>N('turtle');
-function setS(s){if(s===4&&Q.s<4)pendingMsg.push([[BU(),'Tas tavo tiltas per upę – visas sulūžęs! Kaip tu juo vaikščioji?'],[G(),'Šokinėju per akmenis! Bet tau gal nepavyktų...'],['Pasakotojas',BU()+' išsitraukia kapsulę su įrankiais ir per kelias minutes sutaiso tiltą. Kelias į rytus – atviras!']]);Q.s=s;applyGates();if(s===4||s===7)buildMapCache();syncBosses();save()}
+function setS(s){if(s===4&&Q.s<4)pendingMsg.push([[BU(),'Tas tavo tiltas per upę – visas sulūžęs! Kaip tu juo vaikščioji?'],[G(),'Šokinėju per akmenis! Bet tau gal nepavyktų...'],['Pasakotojas',BU()+' išsitraukia kapsulę su įrankiais ir per kelias minutes sutaiso tiltą. Kelias į rytus – atviras!']]);Q.s=s;applyGates();if(s===4||s===7)buildMapCache();refreshGates();syncBosses();save()}
 function questText(){if(!W1())return questTextW();
   switch(Q.s){
     case 0:return Q.dummies<3?`Rytinė treniruotė: sudaužyk iškamšas ${Q.dummies}/3`:'Rytinė treniruotė: numušk taikinį LAZDA iš toli';
@@ -1781,7 +1793,7 @@ function hitPlayer(a){
   if(P.inv>0||P.dead)return;if(P.heal){P.heal=null;addFloat(P.x,P.y-44,'Atgavimas pertrauktas!','#ff9a6a')}const d=Math.max(1,Math.round(a*(1-defRed()))+ri(0,2));P.hp-=d;sfx('hurt');P.inv=.6;P.lastHit=time;addFloat(P.x,P.y-20,'-'+d,'#ff6b5b');puff(P.x,P.y-20,5,['#e43b44','#f4f4f4'],120,.3,0,1.5);
   if(P.hp<=0)startDeath();
 }
-function startDeath(){P.hp=0;P.dead={t:2.6};sfx('death');shots=[];hazards=[];joy=null;btn.A=btn.B=false;shake=.3;puff(P.x,P.y-10,16,['#e43b44','#f4f4f4','#feae34'],100,.8,-10,2);
+function startDeath(){P.hp=0;P.dead={t:2.6};P.spin=null;P.heal=null;P.poleT=0;P.atkT=0;P.chA=P.chB=0;btn.A=btn.B=false;sfx('death');shots=[];hazards=[];joy=null;btn.A=btn.B=false;shake=.3;puff(P.x,P.y-10,16,['#e43b44','#f4f4f4','#feae34'],100,.8,-10,2);
   for(const e of enemies)if(e.boss){e.dash=0;e.shotT=3;e.gz=null;if(e.mode)e.mode='dive';if(BOSSDEF[e.type]){e.bs='rec';e.bt=3;e.zone=null;e.jh=0}}}
 function finishDeath(){
   const lost=Math.floor(P.xp*.3);P.xp-=lost;P.dead=null;P.hp=P.maxHp;P.ki=P.maxKi;P.inv=2;shots=[];hazards=[];
@@ -2502,7 +2514,7 @@ function genWorld(W){
     decor:(k,x,y,w=1,h=1)=>{DECOR.push({k,x,y,w,h});for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)set(xx,yy,HOUSE)},
     poi:(k,x,y)=>{POI[k]={x:T(x),y:T(y),tx:x,ty:y}},
     clear:(x,y,rad=1.5,t=GRASS)=>{for(let yy=Math.floor(y-rad);yy<=y+rad;yy++)for(let xx=Math.floor(x-rad);xx<=x+rad;xx++)if(Math.hypot(xx-x,yy-y)<=rad&&map[yy]&&SOLID.has(map[yy][xx])&&map[yy][xx]!==HOUSE)set(xx,yy,forestMask[yy]&&forestMask[yy][xx]?DARK:t)}};
-  W.gen(ops);
+  W.gen(ops);W._post=true;
   for(const k in POI)ops.clear(POI[k].tx,POI[k].ty,1.2,M.clearT||M.base||GRASS);
   SPAWN={x:POI.start.x,y:POI.start.y};HOME=SPAWN;
   const far={x:-99999,y:-99999};CAMP=CAR=WC=HB=DEN=TUS=TUB=BEACH=NESTC=CLEAR=SHORE=JUNC=HAMLET=far;POND={x:-999,y:-999};
@@ -2515,13 +2527,18 @@ function genWorld(W){
     let fixed=0;for(const[kx,ky]of keys){if(seen[ky*MW+kx])continue;let best=null,bd=1e9;for(let y=1;y<MH-1;y++)for(let x=1;x<MW-1;x++)if(seen[y*MW+x]){const d=Math.hypot(x-kx,y-ky);if(d<bd){bd=d;best=[x,y]}}
       if(!best)continue;const L=Math.ceil(bd*3);for(let s=0;s<=L;s++){const x=Math.round(kx+(best[0]-kx)*s/L),y=Math.round(ky+(best[1]-ky)*s/L);if(SOLID.has(map[y][x])&&map[y][x]!==HOUSE)map[y][x]=map[y][x]===WATER?BRIDGE:(M.clearT||M.base||GRASS)}fixed++}
     if(!fixed)break}
+  buildGateTiles();
 }
 
 /* ---------- enemies with levels ---------- */
 function lvScale(e,L){const t=ETYPES[e.type];e.lv=L;e.maxHp=e.hp=Math.round(t.hp*(1+.12*(L-1)));e.atk=Math.round(t.atk*(1+.11*(L-1)));e.def=Math.round((t.def||0)+L*.4);e.xp=Math.round(t.xp*(1+.22*(L-1)));if(t.boss)e.rec=L;return e}
-function spawnWorldEnemies(){const W=curW();enemies=[];const r=rng(W.id*31+5);
+let REACH=null;
+function buildReach(){const gt=new Set();for(const g of GATES2)for(const[x,y]of g.tiles)gt.add(y*MW+x);const sx=Math.floor(SPAWN.x/TS),sy=Math.floor(SPAWN.y/TS);REACH=new Uint8Array(MW*MH);const q=[[sx,sy]];REACH[sy*MW+sx]=1;
+  while(q.length){const[x,y]=q.pop();for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,k=ny*MW+nx;if(nx<0||ny<0||nx>=MW||ny>=MH||REACH[k])continue;if(SOLID.has(map[ny][nx])&&!gt.has(k))continue;REACH[k]=1;q.push([nx,ny])}}}
+function nearReach(tx,ty){if(REACH[ty*MW+tx])return[tx,ty];let b=[tx,ty],bd=1e9;for(let y=Math.max(0,ty-12);y<Math.min(MH,ty+13);y++)for(let x=Math.max(0,tx-12);x<Math.min(MW,tx+13);x++)if(REACH[y*MW+x]){const d=Math.hypot(x-tx,y-ty);if(d<bd){bd=d;b=[x,y]}}return b}
+function spawnWorldEnemies(){buildReach();const W=curW();enemies=[];const r=rng(W.id*31+5);
   const okT=new Set([GRASS,FLOWER,DARK,PATH,SAND,CAVEF,NEST]);
-  for(const z of W.enemies){const[type,L,x0,y0,x1,y1,n,o]=z;ensureChar(type);let c=0,g=0;while(c<n&&g++<3000){const tx=x0+Math.floor(r()*(x1-x0+1)),ty=y0+Math.floor(r()*(y1-y0+1));if(!map[ty]||!okT.has(map[ty][tx]))continue;if(Math.hypot(T(tx)-SPAWN.x,T(ty)-SPAWN.y)<7*TS)continue;if(safeAt(T(tx),T(ty)))continue;
+  for(const z of W.enemies){const[type,L,x0,y0,x1,y1,n,o]=z;ensureChar(type);let c=0,g=0;while(c<n&&g++<3000){const tx=x0+Math.floor(r()*(x1-x0+1)),ty=y0+Math.floor(r()*(y1-y0+1));if(!map[ty]||!okT.has(map[ty][tx])||!REACH[ty*MW+tx])continue;if(Math.hypot(T(tx)-SPAWN.x,T(ty)-SPAWN.y)<7*TS)continue;if(safeAt(T(tx),T(ty)))continue;
       const e=lvScale(mkE(type,T(tx),T(ty)),L+Math.floor(r()*3));if(o&&o.night)e.cond=()=>isNight();if(o&&o.from!=null){const fr=o.from;e.cond=()=>wq().st>=fr}enemies.push(e);c++}}
   for(const b of W.bosses){ensureChar(b.type);const p=POI[b.at];const e=lvScale(mkE(b.type,p.x,p.y),b.L);const sty=BOSS_STYLE[b.type]||['brawler',{}];BOSSDEF[b.type]=mkBossDef(sty[0],Math.round(e.atk*1.25),Object.assign({aggro:260},sty[1]));const si=W.steps.findIndex(s=>s.t==='boss'&&s.e===b.type);e.storyStep=si;e.cond=()=>!wq().bd[b.type]&&(si<0||wq().st>=si);enemies.push(e)}
   for(const n of(W.npcs||[]))ensureChar(n.k);
@@ -3042,7 +3059,7 @@ function stepTarget(s){if(!s)return null;if(s.t==='go'||s.t==='take')return POI[
 function questTextW(){const q=wq(),W=curW();if(q.done||q.st>=W.steps.length)return W.name+' ✔ – Kinto: Meniu → Kelionė';const s=W.steps[q.st];let t=s.txt;if(s.t==='kill')t+=` ${Math.min(q.cnt,s.n)}/${s.n}`;return t}
 function objectiveW(){const q=wq();if(q.done)return null;return stepTarget(wstep())}
 function advanceW(){const q=wq(),W=curW(),s=W.steps[q.st];q.st++;q.cnt=0;q.pre=0;if(s.on)s.on();save();buildItems();
-  const fin=q.st>=W.steps.length;say(s.dlg||[],()=>{if(fin&&!q.done){q.done=true;save();say(W.outro||[],()=>{const nx=WORLDS[WID+1];if(nx)say([['Patarimas',`Kitas pasaulis: ${nx.name} (nuo Lv ${nx.lvl[0]}). Kviesk Kinto debesėlį: Meniu → Kinto kelionė.`]])})}})}
+  refreshGates();const fin=q.st>=W.steps.length;say(s.dlg||[],()=>{if(fin&&!q.done){q.done=true;save();say(W.outro||[],()=>{const nx=WORLDS[WID+1];if(nx)say([['Patarimas',`Kitas pasaulis: ${nx.name} (nuo Lv ${nx.lvl[0]}). Kviesk Kinto debesėlį: Meniu → Kinto kelionė.`]])})}})}
 function worldTriggers(){if(dlg||ynOpen||P.dead||P.sleep)return;const q=wq(),W=curW();
   if(!q.intro){q.intro=true;save();say(W.intro||[]);return}
   if(q.done||q.st>=W.steps.length)return;const s=W.steps[q.st];
@@ -3054,8 +3071,8 @@ function interactablesW(){const L=[];if(Q.pcamp)L.push({k:'pcamp',type:'use',x:Q
   for(const n of NPCS)if(npcVisible(n))L.push({k:'npc',type:'talk',n,x:n.x,y:n.y});for(const it of items)L.push({k:'item',type:'take',it,x:it.x,y:it.y});return L}
 function buildItemsW(){const W=curW(),q=wq();items=[];const r=rng(W.id*13+(Q.dayN||0));
   const s=W.steps[q.st];if(s&&s.t==='take'&&POI[s.p])items.push({kind:'qitem',id:'q'+W.id+'_'+q.st,x:POI[s.p].x,y:POI[s.p].y});
-  (W.loot||[]).forEach(([x,y],i)=>{const id='L'+W.id+'_'+i;if(q.got.includes(id))return;const sp={x:T(x),y:T(y)};items.push({kind:'gear',id,loot:true,inst:genGear(W.lvl[1],i===0?'e':'r'),x:sp.x,y:sp.y})});
-  for(let i=0;i<(W.herbs||0);i++){let g=0;while(g++<200){const tx=2+Math.floor(r()*76),ty=2+Math.floor(r()*56);if([GRASS,DARK,SAND,FLOWER].includes(map[ty][tx])){items.push(r()<.4?{kind:'herb',id:'wh'+i+'_'+(Q.dayN||0),x:T(tx),y:T(ty)}:{kind:'food',fid:['apple','mushk','apple','fish','tea'][Math.floor(r()*5)],id:'wf'+i+'_'+(Q.dayN||0),x:T(tx),y:T(ty)});break}}}
+  (W.loot||[]).forEach(([x,y],i)=>{const id='L'+W.id+'_'+i;if(q.got.includes(id))return;if(!REACH)buildReach();const[nx2,ny2]=nearReach(x,y);const sp={x:T(nx2),y:T(ny2)};items.push({kind:'gear',id,loot:true,inst:genGear(W.lvl[1],i===0?'e':'r'),x:sp.x,y:sp.y})});
+  for(let i=0;i<(W.herbs||0);i++){let g=0;while(g++<200){const tx=2+Math.floor(r()*76),ty=2+Math.floor(r()*56);if([GRASS,DARK,SAND,FLOWER].includes(map[ty][tx])&&REACH&&REACH[ty*MW+tx]){items.push(r()<.4?{kind:'herb',id:'wh'+i+'_'+(Q.dayN||0),x:T(tx),y:T(ty)}:{kind:'food',fid:['apple','mushk','apple','fish','tea'][Math.floor(r()*5)],id:'wf'+i+'_'+(Q.dayN||0),x:T(tx),y:T(ty)});break}}}
   items=items.filter(it=>!((it.kind==='herb'||it.kind==='food')&&Q.got.includes(it.id)))}
 function gateBlockW(x,y){const W=curW(),q=wq(),tx=x/TS,ty=y/TS;for(const g of(W.gates||[])){const[a,b,c,d]=g.r;if(tx>=a&&tx<=c+1&&ty>=b&&ty<=d+1&&q.st<g.until)return{msg:()=>g.msg}}return null}
 function safeAtW(x,y){if(Q&&Q.pcamp&&Math.hypot(x-Q.pcamp.x,y-Q.pcamp.y)<4*TS)return true;if(Math.hypot(x-SPAWN.x,y-SPAWN.y)<5*TS)return true;for(const[sx,sy,r]of(curW().safe||[]))if(Math.hypot(x-T(sx),y-T(sy))<r*TS)return true;return false}
@@ -3141,7 +3158,7 @@ function doNew(){auInit();try{localStorage.removeItem(SKEY)}catch(e){}$('confirm
 $('newBtn').onclick=()=>{const sv=load();if(!sv){doNew();return}$('confirmTxt').textContent=`Turi išsaugotą žaidimą (Lv ${sv.P.lvl}, žaista ~${Math.round((sv.Q.play||0)/60)} min). Pradėjus iš naujo, jis bus ištrintas visam laikui.`;$('confirmOv').style.display='flex'};
 $('confYes').onclick=doNew;$('confNo').onclick=()=>{$('confirmOv').style.display='none'};
 requestAnimationFrame(loop);
-const GAME_VER='1.3.3';
+const GAME_VER='1.3.4';
 document.addEventListener('contextmenu',e=>{if(!/INPUT|TEXTAREA/.test(e.target.tagName))e.preventDefault()});document.addEventListener('selectstart',e=>{if(!/INPUT|TEXTAREA/.test(e.target.tagName))e.preventDefault()});document.querySelectorAll('img').forEach(i=>i.draggable=false);
 $('verTxt').textContent='Versija '+GAME_VER;
 const onPages=/github\.io$/.test(location.hostname);
