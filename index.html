@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="lt">
 <head>
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#181425"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Ki Legendos – 1 skyrius: Paozu kalnas</title>
@@ -2352,6 +2353,7 @@ function doNew(){auInit();try{localStorage.removeItem(SKEY)}catch(e){}$('confirm
 $('newBtn').onclick=()=>{const sv=load();if(!sv){doNew();return}$('confirmTxt').textContent=`Turi išsaugotą žaidimą (Lv ${sv.P.lvl}, žaista ~${Math.round((sv.Q.play||0)/60)} min). Pradėjus iš naujo, jis bus ištrintas visam laikui.`;$('confirmOv').style.display='flex'};
 $('confYes').onclick=doNew;$('confNo').onclick=()=>{$('confirmOv').style.display='none'};
 requestAnimationFrame(loop);
+if('serviceWorker'in navigator&&/^https?:/.test(location.protocol)&&/github\.io$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
