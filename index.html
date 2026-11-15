@@ -50,6 +50,7 @@ body.onTitle #hud,body.onTitle .tbtn,body.onTitle .cbtn,body.onTitle #clock,body
 #bA{right:18px;bottom:30px;width:80px;height:80px;background:#e43b44}#bA img{width:36px;height:36px}
 #bB{right:106px;bottom:20px;width:64px;height:64px;background:#0099db}#bB img{width:28px;height:28px}
 #bE{right:30px;bottom:122px;width:58px;height:58px;background:#3e8948}#bE img{width:28px;height:28px}
+#bSw{right:180px;bottom:34px;width:42px;height:42px;background:#3a4466}#bSw span{color:#fff;font-size:18px}
 #bK{right:176px;bottom:30px;width:58px;height:58px;background:#feae34}#bK img{width:28px;height:28px}#bK span{color:#181425}
 #bH{right:100px;bottom:96px;width:52px;height:52px;background:#5a6988}#bH img{width:24px;height:24px}
 #dialog{position:fixed;left:8px;right:8px;bottom:8px;padding:12px 14px 20px;font-size:15px;line-height:1.4;display:none;z-index:5;min-height:64px;background:#262b44}
@@ -107,6 +108,7 @@ ol{padding-left:22px;margin:6px 0}ol li{margin:3px 0}
 <button class="tbtn px" id="qIcon"><img id="icQ"><span id="qBadge">!</span></button>
 <div id="bossbar" class="px"><div id="bossName"></div><div class="bar"><i></i></div></div>
 <div class="cbtn" id="bK" style="display:none"><img id="icK"><span>KAME</span></div>
+<div class="cbtn" id="bSw"><span style="font-size:18px">⇄</span></div>
 <div class="cbtn" id="bH"><img id="icH"><span id="bHn">2</span></div>
 <div class="cbtn" id="bE"><img id="icE"><span id="bEl">KALBĖTI</span></div>
 <div class="cbtn" id="bB"><img id="icB"><span id="bBl">LAZDA</span></div>
@@ -887,6 +889,14 @@ function buildItemSprites(){
   SPX.gCoin=mkSheet(16,16,1,1,({E,R})=>{E(8,8,6,6,'#feae34');E(8,8,4.5,4.5,'#ffe08a');R(7,4,2,8,'#c87a10');R(5,7,6,2,'#c87a10')});
   SPX.gNeck=mkSheet(16,16,1,1,({E,P})=>{for(let a=0;a<14;a++){const t=.3+a/13*2.5;P(Math.round(8+Math.cos(t)*6),Math.round(5+Math.sin(t)*6),a%2?'#f4f4f4':'#b55088')}E(8,12,2.5,2.5,'#63c74d');E(7,11,1,1,'#a8f080')});
   SPX.gScale=mkSheet(16,16,1,1,({E,R})=>{E(8,8,6,6,'#e8a030');E(8,8,4.5,4.5,'#ffd060');R(5,6,6,1,'#c87a10');R(4,9,8,1,'#c87a10');E(6,5,1.5,1,'#fff')});
+  SPX.fApple=mkSheet(16,16,1,1,({E,R,P})=>{E(8,9,5.5,5,'#e43b44');E(6,7,2,1.6,'#ff8a8a');R(7,2,2,4,'#6b4423');E(10,3,2.5,1.4,'#63c74d')});
+  SPX.fMeat=mkSheet(16,16,1,1,({E,R})=>{E(9,7,5.5,4.5,'#a8582a');E(8,6,3.5,2.6,'#c87a48');R(3,11,5,2,'#f4ead0');E(3,11,1.6,1.6,'#f4ead0');E(3,13,1.6,1.6,'#f4ead0')});
+  SPX.fFish=mkSheet(16,16,1,1,({E,R,P})=>{E(8,8,6,3.5,'#c8843a');E(8,7,4,1.6,'#e8a85a');R(13,5,2,6,'#a8642a');P(4,7,'#1a1a1a');R(1,12,14,2,'#8a5a2a')});
+  SPX.fRice=mkSheet(16,16,1,1,({R,P})=>{for(let y=3;y<14;y++){const hw=Math.round((y-3)*.55)+1;R(8-hw,y,hw*2,1,'#f4f4f4')}R(4,10,8,4,'#2a3a2a');P(7,5,'#d8d8d8')});
+  SPX.fMilk=mkSheet(16,16,1,1,({R})=>{R(5,5,6,10,'#f4f4f4');R(6,2,4,3,'#e8e8f0');R(6,1,4,1,'#3a6ad0');R(5,8,6,3,'#3a6ad0');R(6,6,1,8,'#ffffff')});
+  SPX.fTea=mkSheet(16,16,1,1,({R,E})=>{R(3,6,9,7,'#e8e0d0');R(4,7,7,2,'#63c74d');E(12,9,2,2,'#e8e0d0');R(2,13,11,1,'#a8a090');R(5,2,1,3,'#c0cbdc');R(8,1,1,3,'#c0cbdc')});
+  SPX.fSenzu=mkSheet(16,16,1,1,({E,P})=>{E(8,8,4,5.5,'#63c74d');E(7,6,2,2.5,'#a8f080');P(9,11,'#3e8948')});
+  SPX.fMushK=mkSheet(16,16,1,1,({E,R,P})=>{E(8,6,6,4,'#3a8ad0');R(6,9,4,6,'#f0e8d0');P(5,5,'#fff');P(10,4,'#fff');P(8,7,'#fff')});
   SPX.icOrb=mkSheet(14,14,1,1,({E,P})=>{E(7,7,5.6,5.6,'#f77622');E(6,6,3.6,3.6,'#feae34');P(5,4,'#fff');P(4,5,'#fff')},'#3e2731');
 }
 buildItemSprites();
@@ -894,7 +904,7 @@ function spr(name,x,y,f,sc,alpha){const t=SPX[name],rows=name==='fire'?2:1,cols=
   if(alpha!=null)ctx.globalAlpha=alpha;ctx.imageSmoothingEnabled=false;ctx.drawImage(t,col*fw,row*fh,fw,fh,Math.round(x-fw*sc/2),Math.round(y-fh*sc),fw*sc,fh*sc);if(alpha!=null)ctx.globalAlpha=1}
 const SPX_COLS={orb:4,fire:4,ki:2,icSnd:2};
 function iconURL(name,size){const t=SPX[name];const c=document.createElement('canvas');const fw=t.width/(SPX_COLS[name]||1),fh=name==='fire'?t.height/2:t.height;c.width=fw;c.height=fh;c.getContext('2d').drawImage(t,0,0,fw,fh,0,0,fw,fh);return c.toDataURL()}
-const ICON={};for(const k of['herb','talk','fist','staff','kame','icOrb','mush','axe','scroll','wood','icDoor','icHand','icExit','icMap','icPal','icStat','cloud','icFish','icMenu','icBag','icSave','sun','moon','gWrap','gBand','gGlove','gVest','gGVest','gFur','gSandal','gBoot','gCoin','gNeck','gScale'])ICON[k]=iconURL(k);ICON.fish=ICON.icFish;
+const ICON={};for(const k of['herb','talk','fist','staff','kame','icOrb','mush','axe','scroll','wood','icDoor','icHand','icExit','icMap','icPal','icStat','cloud','icFish','icMenu','icBag','icSave','sun','moon','fApple','fMeat','fFish','fRice','fMilk','fTea','fSenzu','fMushK','gWrap','gBand','gGlove','gVest','gGVest','gFur','gSandal','gBoot','gCoin','gNeck','gScale'])ICON[k]=iconURL(k);ICON.fish=ICON.icFish;
 {const t=SPX.icSnd,c=document.createElement('canvas');c.width=16;c.height=16;const g=c.getContext('2d');g.drawImage(t,0,0,16,16,0,0,16,16);ICON.sndOn=c.toDataURL();g.clearRect(0,0,16,16);g.drawImage(t,16,0,16,16,0,0,16,16);ICON.sndOff=c.toDataURL()}
 
 /* ================= TEXTURES ================= */
@@ -1014,7 +1024,7 @@ function drawMap(cx,cy,vw,vh,x0,y0,x1,y1){
 let P,Q,enemies,shots,items,floats,hazards,flash=0,orbs=[],flyers=[],parts=[];
 function puff(x,y,n,cols,sp,life,grav,size,up){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=sp*(.4+Math.random()*.6);parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v*(up?.5:1)-(up||0),t:life*(.6+Math.random()*.4),l:life,c:cols[i%cols.length],s:size||2,g:grav||0})}}
 let B={x:0,y:0},TU={x:0,y:0,hp:60,maxHp:60},RO={x:0,y:0};
-function newPlayer(){return{kir:1,crt:0,agi:0,x:SPAWN.x,y:SPAWN.y,fx:0,fy:1,lck:0,lvl:1,xp:0,hp:70,maxHp:70,ki:30,maxKi:30,str:5,def:0,kip:5,pts:0,skP:0,skPunch:0,skSpin:0,stPow:0,stRng:0,stArc:0,fist:0,hand:0,gear:{eq:{},inv:[]},chA:0,chB:0,atkT:0,kiT:0,poleT:0,inv:0,lastHit:0,moving:false}}
+function newPlayer(){return{kir:1,crt:0,agi:0,x:SPAWN.x,y:SPAWN.y,fx:0,fy:1,lck:0,lvl:1,xp:0,hp:70,maxHp:70,ki:30,maxKi:30,str:5,def:0,kip:5,pts:0,skP:0,skPunch:0,skSpin:0,stPow:0,stRng:0,stArc:0,fist:0,hand:0,skHeal:0,bmode:'staff',gear:{eq:{},inv:[]},chA:0,chB:0,atkT:0,kiT:0,poleT:0,inv:0,lastHit:0,moving:false}}
 function newQuest(){return{tod:7,fire:false,chopped:[],s:0,dummies:0,fishOn:false,balls:1,kame:false,night:false,wood:0,rocks:0,herbs:2,got:[],sq1:0,sq2:0,scrolls:0,tkDead:false,kills:0,startT:Date.now(),play:0}}
 const need=l=>Math.floor(20*Math.pow(l,1.5));
 
@@ -1659,7 +1669,7 @@ let menuTab='stats';
 let invTab='use';
 function renderInv(){
   const m=Q.got.filter(i=>i[0]==='m').length,U=[],QI=[],C=[];
-  U.push(['herb','Žolelės','×'+Q.herbs,'Gydo 35 HP. Retai iškrenta iš priešų – dažniau, jei didelė sėkmė. (H)',Q.herbs>0?'herb':null]);
+  for(const id of FOOD_ORDER){const c=foodN(id);if(c>0||id==='herb')U.push([FOODS[id].ic,FOODS[id].n+(P.qfood===id||(!P.qfood&&id==='herb')?' ★':''),'×'+c,foodDesc(id)+(id==='senzu'?' – reta, iš Karino arba retai iš priešų':''),c>0?id:null])}
   U.push(['wood','Laužavietė','',Q.pcamp?'Laužas jau dega – žiūrėk ▲ žemėlapyje. Prie jo galima miegoti.':'Užkurk laužą bet kur, kur šalia nėra priešų. Prie jo galima pamiegoti iki ryto, o žvėrys prie ugnies nesiartina. (F)',null,null,'camp']);
   if(Q.s>=14)U.push(['cloud','Kintonas','','Skraidantis debesėlis – greitesnis judėjimas.']);
   if(Q.s===2||Q.s===3)QI.push(['fish','Milžiniška žuvis','×1','Pusryčiai! Nunešk namo.']);
@@ -1672,9 +1682,9 @@ function renderInv(){
   const L=invTab==='use'?U:invTab==='quest'?QI:C;
   document.querySelectorAll('#invTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.it===invTab);const n=b.dataset.it==='quest'?QI.length:0;b.textContent=({use:'Naudojami',quest:'Užduočių'+(n?' ('+n+')':''),col:'Lobiai',gear:'Ekipuotė'+(gearG().inv.length?' ('+gearG().inv.length+')':'')})[b.dataset.it]});
   let h='';if(!L.length)h='<div class="small" style="padding:14px 0;text-align:center">Šiuo metu užduočių daiktų nėra.</div>';
-  for(const[ic,n,q,d,use,read,camp]of L)h+=`<div class="inv"><img src="${ICON[ic]}"><div class="d"><b>${n} <span class="q">${q}</span></b><span>${d}</span></div>${use?'<button class="big" style="width:auto;margin:0" data-use="1">Naudoti</button>':''}${read?'<button class="big" style="width:auto;margin:0" data-read="1">Skaityti</button>':''}${camp?'<button class="big" style="width:auto;margin:0" data-camp="1">Kurti</button>':''}</div>`;
+  for(const[ic,n,q,d,use,read,camp]of L)h+=`<div class="inv"><img src="${ICON[ic]}"><div class="d"><b>${n} <span class="q">${q}</span></b><span>${d}</span></div>${use?`<button class="big" style="width:auto;margin:0" data-use="${use}">Naudoti</button>`:''}${read?'<button class="big" style="width:auto;margin:0" data-read="1">Skaityti</button>':''}${camp?'<button class="big" style="width:auto;margin:0" data-camp="1">Kurti</button>':''}</div>`;
   $('invRows').innerHTML=h;
-  const u=$('invRows').querySelector('[data-use]');if(u)u.onclick=()=>{useHerb();renderInv()};
+  $('invRows').querySelectorAll('[data-use]').forEach(u=>u.onclick=()=>{useFood(u.dataset.use);renderInv()});
   const cb=$('invRows').querySelector('[data-camp]');if(cb)cb.onclick=()=>{closeInv();makeCamp()};
   const r=$('invRows').querySelector('[data-read]');if(r)r.onclick=()=>{closeInv();say(SCROLL_TXT.slice(0,Q.scrolls).map((t,i)=>['Senelio užrašas '+(i+1),t]))};
 }
@@ -1735,7 +1745,7 @@ $('closeMenu').onclick=()=>{menuOpen=false;$('menu').style.display='none'};
 function openInv(){if(!P)return;invOpen=true;renderInv();$('invOv').style.display='flex'}
 function closeInv(){invOpen=false;$('invOv').style.display='none'}
 document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('button');if(!b||b.disabled||b.dataset.k||b.dataset.sk||b.dataset.fist)return;try{auInit()}catch(_){}sfx('click')},true);
-$('worldClose').onclick=closeWorlds;$('pmTravel').onclick=()=>{closePause();openWorlds()};$('endKinto').onclick=()=>{$('endOv').style.display='none';openWorlds()};bindBtn('bK',fireKame,()=>{});
+$('worldClose').onclick=closeWorlds;$('pmTravel').onclick=()=>{closePause();openWorlds()};$('endKinto').onclick=()=>{$('endOv').style.display='none';openWorlds()};bindBtn('bK',fireKame,()=>{});bindBtn('bSw',cycleB,()=>{});
 $('ynYes').onclick=()=>ynDone(0);$('ynNo').onclick=()=>ynDone(1);
 $('invBtn').onclick=openInv;$('closeInv').onclick=closeInv;
 let mapSeen='';function mapLoop(){if(!mapOpen)return;renderMinimap();requestAnimationFrame(mapLoop)}
@@ -1765,7 +1775,7 @@ const paused=()=>!P||CS||worldsOpen||$('travelOv').style.display==='flex'||dlg||
 /* ================= COMBAT ================= */
 function addFloat(x,y,txt,col){floats.push({x,y,txt,col,t:1.1})}
 function hitPlayer(a){
-  if(P.inv>0||P.dead)return;const d=Math.max(1,Math.round(a*(1-defRed()))+ri(0,2));P.hp-=d;sfx('hurt');P.inv=.6;P.lastHit=time;addFloat(P.x,P.y-20,'-'+d,'#ff6b5b');puff(P.x,P.y-20,5,['#e43b44','#f4f4f4'],120,.3,0,1.5);
+  if(P.inv>0||P.dead)return;if(P.heal){P.heal=null;addFloat(P.x,P.y-44,'Atgavimas pertrauktas!','#ff9a6a')}const d=Math.max(1,Math.round(a*(1-defRed()))+ri(0,2));P.hp-=d;sfx('hurt');P.inv=.6;P.lastHit=time;addFloat(P.x,P.y-20,'-'+d,'#ff6b5b');puff(P.x,P.y-20,5,['#e43b44','#f4f4f4'],120,.3,0,1.5);
   if(P.hp<=0)startDeath();
 }
 function startDeath(){P.hp=0;P.dead={t:2.6};sfx('death');shots=[];hazards=[];joy=null;btn.A=btn.B=false;shake=.3;puff(P.x,P.y-10,16,['#e43b44','#f4f4f4','#feae34'],100,.8,-10,2);
@@ -1798,7 +1808,7 @@ function finishKill(e){
   if(e.boss){Q.bw=Q.bw||{};Q.bw[e.type]=true;e.eng=false}
   if(!W1()){if(e.boss)wq().bd[e.type]=true;else{const s=wstep();if(s&&s.t==='kill'&&s.e===e.type)wq().cnt++}}
   e.alive=false;e.resp=e.type==='tigerking'?600:150;if(e.ai!=='none'||e.type==='rock'){sfx('die');puff(e.x,e.y-10,12,['#c0cbdc','#8b9bb4','#f4f4f4'],70,.6,-30,3)}if(e.type==='drytree')puff(e.x,e.y-20,10,['#8a5a2a','#a08040','#6a4a30'],120,.5,300,2);if(e.xp){const xv=e.xp*(1+Math.random()*luckXp())*(e.lv&&P.lvl-e.lv>=10?.25:e.lv&&P.lvl-e.lv>=5?.5:1),n=Math.min(7,Math.max(1,Math.ceil(xv/12))),o0=reachSpot(e.x,e.y);for(let i=0;i<n;i++){const a=Math.random()*6.28,sp=60+Math.random()*80;orbs.push({x:o0.x,y:o0.y,ox:o0.x,oy:o0.y,life:90,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp*.6,z:0,vz:120+Math.random()*80,t:0,val:xv/n,ph:Math.random()*4})}}
-  if(e.ai!=='none'&&!e.boss){Q.kills++;if(Math.random()<dropCh()){const sp=reachSpot(e.x,e.y);items.push({kind:'herb',id:'h'+Math.random(),x:sp.x,y:sp.y})}else{const gid=Object.keys(GEAR).find(k=>GEAR[k].src===e.type);if(gid&&Math.random()<gearCh())giveGear(gid,e.x+ri(-10,10),e.y)}}
+  if(e.ai!=='none'&&!e.boss){Q.kills++;if(Math.random()<dropCh()){const sp=reachSpot(e.x,e.y);const fid=foodDropFor(e);items.push(fid==='herb'?{kind:'herb',id:'h'+Math.random(),x:sp.x,y:sp.y}:{kind:'food',fid,id:'f'+Math.random(),x:sp.x,y:sp.y})}else{const gid=Object.keys(GEAR).find(k=>GEAR[k].src===e.type);if(gid&&Math.random()<gearCh())giveGear(gid,e.x+ri(-10,10),e.y)}}
   if(e.boss){const gid=Object.keys(GEAR).find(k=>GEAR[k].src===e.type);if(gid)giveGear(gid,e.x+20,e.y+10)}
   if(e.lv&&e.ai!=='none'){if(e.boss)dropGear(genGear(e.lv,rollRar(true)),e.x+24,e.y+12);else if(!Object.keys(GEAR).some(k=>GEAR[k].src===e.type)&&Math.random()<gearCh()*1.3)dropGear(genGear(e.lv,rollRar(false)),e.x,e.y)}
   if(e.type==='drytree'){(Q.chopped=Q.chopped||[]).push(e.id);if(Q.s===5&&Q.wood<5){Q.wood++;flyers.push({k:'wood',x:e.x,y:e.y-30,t:0});addFloat(e.x,e.y-50,`Malkos ${Q.wood}/5`,'#feae34')}save()}
@@ -1896,6 +1906,7 @@ const SKILLS={
   stPow:{g:'Lazda',n:'Jėga',d:'Stipresni lazdos smūgiai.',max:4,cost:[1,1,2,2],lvl:[1,3,5,7],info:l=>`Žala +${15*l}%`},
   stRng:{g:'Lazda',n:'Atstumas',d:'Lazda pasiekia toliau.',max:4,cost:[1,1,2,2],lvl:[1,3,5,7],info:l=>`Atstumas ${STAFF_RNG[l]} (kumštis ~30)`},
   stArc:{g:'Lazda',n:'Lankas',d:'Platesnis mostas – užkabina daugiau priešų.',max:4,cost:[1,1,2,2],lvl:[2,4,6,8],info:l=>`Lankas ${STAFF_ARC[l]}°`},
+  skHeal:{g:'Ki technikos',n:'Ki atgavimas',d:'Perjunk technikos mygtuką (⇄) į ATGAVIMĄ ir laikyk: stovėdamas paverti ki gyvybe. Smūgis nutraukia.',max:3,cost:[1,2,3],lvl:[2,6,12],info:l=>`${HEAL_R[l][0]} ki/s → ${HEAL_R[l][1]} HP/s`},
   skPunch:{g:'Super technikos',n:'Super smūgis',d:'Laikyk SMŪGIS ir atleisk – įsibėgėjęs galingas kumštis su smūgio banga.',max:3,cost:[1,2,3],lvl:[2,5,8],info:l=>`Žala ×${(3+.8*(l-1)).toFixed(1)} · ki ${12+2*l}`},
   skSpin:{g:'Super technikos',n:'Lazdos viesulas',d:'Laikyk LAZDA ir atleisk – 360° sūkurys. Spindulys ir jėga didesni už įprastą lazdą.',max:3,cost:[1,2,3],lvl:[3,6,9],info:l=>`Spindulys lazda+${30+18*(l-1)} · ${l+1} smūgiai · žala ×${(1.3+.25*(l-1)).toFixed(2)} · ki ${18+2*l}`}
 };
@@ -1934,8 +1945,11 @@ function special(){
 }
 function pressA(){if(dlg){advDlg();return}if(paused())return;btn.A=true;P.chA=0;punch()}
 function releaseA(){if(!btn.A)return;btn.A=false;if(P&&P.chA>=CHARGE&&P.skPunch>0&&!paused())superPunch();if(P)P.chA=0}
-function pressB(){if(paused())return;btn.B=true;P.chB=0}
-function releaseB(){if(!btn.B)return;btn.B=false;if(!P||paused()){if(P)P.chB=0;return}if(P.chB>=CHARGE&&P.skSpin>0)spinAttack(true);else spinAttack(false);P.chB=0}
+function bModes(){const m=['staff'];if(P.skHeal>0)m.push('heal');if(Q.kame)m.push('kame');return m}
+function cycleB(){if(!P||paused())return;const m=bModes();if(m.length<2){addFloat(P.x,P.y-30,'Išmok daugiau technikų (Kovos menai)','#c0cbdc');return}const i=m.indexOf(P.bmode||'staff');P.bmode=m[(i+1)%m.length];sfx('blip');addFloat(P.x,P.y-34,{staff:'LAZDA',heal:'ATGAVIMAS',kame:'KAMEHAMEHA'}[P.bmode],'#feae34')}
+const HEAL_R=[[0,0],[8,6],[10,10],[12,16]];
+function pressB(){if(paused())return;btn.B=true;P.chB=0;const md=P.bmode||'staff';if(md==='kame'){fireKame();return}if(md==='heal'){if(P.hp>=P.maxHp){addFloat(P.x,P.y-30,'Gyvybės pilnos','#63c74d');return}if(P.ki<2){addFloat(P.x,P.y-26,'Trūksta ki','#7cc8ff');return}P.heal={t:0};sfx('heal')}}
+function releaseB(){if(!btn.B)return;btn.B=false;if(P)P.heal=null;if(P&&(P.bmode||'staff')!=='staff'){P.chB=0;return}if(!P||paused()){if(P)P.chB=0;return}if(P.chB>=CHARGE&&P.skSpin>0)spinAttack(true);else spinAttack(false);P.chB=0}
 function campBlock(){
   if(inside)return'Viduje laužo nekursi.';
   if(Q.s===5&&!Q.fire)return'Šiąnakt Bulma laukia stovykloje – laužą reikia kurti ten.';
@@ -1948,11 +1962,26 @@ function campBlock(){
 function makeCamp(){const why=campBlock();if(why){addFloat(P.x,P.y-30,why,'#ff9a6a');sfx('blip');return false}
   Q.pcamp={x:Math.round(P.x+P.fx*30),y:Math.round(P.y+P.fy*30)};sfx('heal');puff(Q.pcamp.x,Q.pcamp.y,16,['#feae34','#ff7a3c','#ffe08a'],90,.7,-80,2);
   addFloat(P.x,P.y-30,'Laužas užkurtas','#feae34');P.atkType='punch';P.atkDur=P.atkT=.3;save();return true}
-function useHerb(){if(Q.herbs<=0){addFloat(P.x,P.y-26,'Nėra žolelių','#ccc');return}if(P.hp>=P.maxHp){addFloat(P.x,P.y-26,'Sveikata pilna','#ccc');return}Q.herbs--;sfx('heal');P.hp=Math.min(P.maxHp,P.hp+35);addFloat(P.x,P.y-26,'+35 HP','#7CFC00');save()}
+const FOODS={herb:{n:'Žolelė',ic:'herb',hp:[.15,25]},apple:{n:'Obuolys',ic:'fApple',hp:[.1,10]},rice:{n:'Ryžių kamuoliukas',ic:'fRice',hp:[.2,15],ki:[.1,5]},fish:{n:'Kepta žuvis',ic:'fFish',hp:[.3,20]},meat:{n:'Kepsnys',ic:'fMeat',hp:[.45,30]},
+  milk:{n:'Pienas',ic:'fMilk',ki:[.25,10]},tea:{n:'Žolelių arbata',ic:'fTea',ki:[.45,15]},mushk:{n:'Ki grybas',ic:'fMushK',ki:[.7,20]},senzu:{n:'Senzu pupelė',ic:'fSenzu',hp:[1,0],ki:[1,0]}};
+const FOOD_ORDER=['herb','apple','rice','fish','meat','milk','tea','mushk','senzu'];
+function foodN(id){return id==='herb'?Q.herbs:((Q.food||{})[id]||0)}
+function foodAdd(id,n){if(id==='herb'){Q.herbs=Math.min(30,Q.herbs+n);return}Q.food=Q.food||{};Q.food[id]=Math.min(30,(Q.food[id]||0)+n)}
+function foodAmt(f,k){const a=f[k];if(!a)return 0;return Math.round((k==='hp'?P.maxHp:P.maxKi)*a[0]+a[1])}
+function foodDesc(id){const f=FOODS[id],a=[];if(f.hp)a.push(id==='senzu'?'visos HP':'+'+foodAmt(f,'hp')+' HP');if(f.ki)a.push(id==='senzu'?'visas ki':'+'+foodAmt(f,'ki')+' ki');return a.join(', ')}
+function useFood(id){id=id||P.qfood||'herb';const f=FOODS[id];if(!f)return;if(foodN(id)<=0){addFloat(P.x,P.y-26,'Nėra: '+f.n,'#ccc');return}
+  const needHp=f.hp&&P.hp<P.maxHp,needKi=f.ki&&P.ki<P.maxKi;if(!needHp&&!needKi){addFloat(P.x,P.y-26,f.hp?'Sveikata pilna':'Ki pilnas','#ccc');return}
+  if(id==='herb')Q.herbs--;else Q.food[id]--;P.qfood=id;sfx('heal');
+  if(f.hp){const v=foodAmt(f,'hp');P.hp=Math.min(P.maxHp,P.hp+v);addFloat(P.x,P.y-26,'+'+v+' HP','#7CFC00')}
+  if(f.ki){const v=foodAmt(f,'ki');P.ki=Math.min(P.maxKi,P.ki+v);addFloat(P.x,P.y-40,'+'+v+' ki','#7cc8ff')}save()}
+function foodDropFor(e){const t=e.type,hum=BUILTIN[t]&&BUILTIN[t].human;if(Math.random()<.02*(1+st('lck')*.05))return'senzu';
+  const tb=W1()?(['wolf','tiger','boar'].includes(t)?['herb','herb','meat','apple']:['herb','herb','apple','milk']):['ghost','demon','pterod','mummyM'].includes(t)?['tea','mushk','rice']:hum?['rice','milk','tea','apple','fish']:['meat','fish','apple','herb','milk'];return tb[ri(0,tb.length-1)]}
+function useHerb(){useFood(P.qfood||'herb')}
+function useHerbOld(){if(Q.herbs<=0){addFloat(P.x,P.y-26,'Nėra žolelių','#ccc');return}if(P.hp>=P.maxHp){addFloat(P.x,P.y-26,'Sveikata pilna','#ccc');return}Q.herbs--;sfx('heal');P.hp=Math.min(P.maxHp,P.hp+35);addFloat(P.x,P.y-26,'+35 HP','#7CFC00');save()}
 
 /* ================= INPUT ================= */
 const keys={};let joy=null;const btn={A:false,B:false};
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;if(dlg&&(k===' '||k==='e'||k==='enter'||k==='j')){advDlg();return}if(paused())return;if(e.repeat)return;if(k==='j'){pressA();return}if(k==='k'){pressB();return}if(k==='e')interact();if(k==='h')useHerb();if(k==='f')makeCamp();if(k==='l')fireKame();if(k==='i'){openInv();return}if(k==='c'){$('menuBtn').onclick();return}if(k==='m')$('mapBtn').onclick()});
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;if(dlg&&(k===' '||k==='e'||k==='enter'||k==='j')){advDlg();return}if(paused())return;if(e.repeat)return;if(k==='j'){pressA();return}if(k==='k'){pressB();return}if(k==='e')interact();if(k==='h')useHerb();if(k==='f')makeCamp();if(k==='l')fireKame();if(k==='q')cycleB();if(k==='i'){openInv();return}if(k==='c'){$('menuBtn').onclick();return}if(k==='m')$('mapBtn').onclick()});
 addEventListener('keyup',e=>{const k=e.key.toLowerCase();keys[k]=false;if(k==='j')releaseA();if(k==='k')releaseB()});
 cv.addEventListener('pointerdown',e=>{e.preventDefault();if(dlg){advDlg();return}if(e.clientX<W*.6&&!joy)joy={id:e.pointerId,ox:e.clientX,oy:e.clientY,x:e.clientX,y:e.clientY}});
 cv.addEventListener('pointermove',e=>{if(joy&&e.pointerId===joy.id){joy.x=e.clientX;joy.y=e.clientY}});
@@ -1968,8 +1997,9 @@ bindBtn('bH',()=>{if(!paused())useHerb()});
 function follow(o,tx,ty,dt,spd){const dx=tx-o.x,dy=ty-o.y,d=Math.hypot(dx,dy);if(d>260&&o!==TU){o.x=tx;o.y=ty;return false}if(d>30){const ox=o.x,oy=o.y;moveEnt(o,dx/d*Math.min(spd,d*3)*dt,dy/d*Math.min(spd,d*3)*dt,8);o.wd=(o.wd||0)+Math.hypot(o.x-ox,o.y-oy);o.fx=dx/d;o.fy=dy/d;return true}return false}
 function updateInteriorMove(dt){let ix=0,iy=0;if(keys['a']||keys['arrowleft'])ix--;if(keys['d']||keys['arrowright'])ix++;if(keys['w']||keys['arrowup'])iy--;if(keys['s']||keys['arrowdown'])iy++;
   if(joy){const dx=joy.x-joy.ox,dy=joy.y-joy.oy,d=Math.hypot(dx,dy);if(d>8){const m=Math.min(1,d/50);ix=dx/d*m;iy=dy/d*m}}
+  if(P.heal){ix=0;iy=0}
   const il=Math.hypot(ix,iy);P.moving=il>.05;if(P.moving){if(il>1){ix/=il;iy/=il}const ox=P.x,oy=P.y;moveEnt(P,ix*100*dt,iy*100*dt,9);P.wd=(P.wd||0)+Math.hypot(P.x-ox,P.y-oy);const n=Math.hypot(ix,iy);P.fx=ix/n;P.fy=iy/n}
-  P.atkT-=dt;P.kiT-=dt;P.ki=Math.min(P.maxKi,P.ki+kiRate()*dt);updateInterior(dt)}
+  P.atkT-=dt;P.kiT-=dt;if(!P.heal)P.ki=Math.min(P.maxKi,P.ki+kiRate()*dt);updateInterior(dt)}
 let bMoving=false,tMoving=false,xpAcc=0,xpAccT=0;
 const escort=()=>Q.s===9||Q.s===11;
 function onMountainPath(){const t=tileAt(P.x,P.y);return P.x>T(59)&&P.y<T(25)&&t===PATH}
@@ -2131,12 +2161,14 @@ function update(dt){if(inside&&P){time+=dt;if(flash>0)flash-=dt;for(const f of f
   let ix=0,iy=0;
   if(keys['a']||keys['arrowleft'])ix--;if(keys['d']||keys['arrowright'])ix++;if(keys['w']||keys['arrowup'])iy--;if(keys['s']||keys['arrowdown'])iy++;
   if(joy){const dx=joy.x-joy.ox,dy=joy.y-joy.oy,d=Math.hypot(dx,dy);if(d>8){const m=Math.min(1,d/50);ix=dx/d*m;iy=dy/d*m}}
+  if(P.heal){ix=0;iy=0}
   const il=Math.hypot(ix,iy);P.moving=il>.05;if(!P.moving){P.runT=0;P.spd=Math.max(0,(P.spd||0)-dt*600)}
   if(P.moving){if(il>1){ix/=il;iy/=il}const chg=(btn.A&&P.chA>.25)||(btn.B&&P.chB>.25),sp=topSpeed()*Math.max(.45,Math.min(1,il))*(chg?.55:1)*(P.spin&&P.spin.big?.6:1);P.spd=sp;const ox=P.x,oy=P.y;moveEnt(P,ix*sp*dt,iy*sp*dt,9);P.wd=(P.wd||0)+Math.hypot(P.x-ox,P.y-oy);const n=Math.hypot(ix,iy);P.fx=ix/n;P.fy=iy/n}
   P.atkT-=dt;P.kiT-=dt;P.inv-=dt;P.poleT-=dt;TU.inv=(TU.inv||0)-dt;
-  if(btn.A)P.chA+=dt;if(btn.B)P.chB+=dt;
+  if(btn.A)P.chA+=dt;if(btn.B&&(P.bmode||'staff')==='staff')P.chB+=dt;
+  if(P.heal){const[kr,hr]=HEAL_R[P.skHeal||0]||[0,0];const use=Math.min(P.ki,kr*dt);if(!kr||use<=0||P.hp>=P.maxHp||!btn.B){if(P.hp>=P.maxHp)addFloat(P.x,P.y-30,'Gyvybės pilnos','#63c74d');P.heal=null}else{P.ki-=use;P.hp=Math.min(P.maxHp,P.hp+use/kr*hr);P.heal.t+=dt;P.lastKiUse=time;if(Math.random()<dt*14)puff(P.x+ri(-14,14),P.y+4,1,['#63c74d','#a8f080','#fff'],30,.7,-70,2)}}
   if(P.spin){P.spin.t-=dt;if(P.spin.big)P.spin.a+=dt*26;else P.spin.a=P.spin.a0-P.spin.arc/2+P.spin.arc*Math.min(1,(1-P.spin.t/P.spin.l)*1.4);spinTick();if(P.spin.t<=0)P.spin=null}
-  P.ki=Math.min(P.maxKi,P.ki+kiRate()*dt);
+  if(!P.heal)P.ki=Math.min(P.maxKi,P.ki+kiRate()*dt);
   if(time-P.lastHit>8)P.hp=Math.min(P.maxHp,P.hp+.5*dt);if(gearUni('regen'))P.hp=Math.min(P.maxHp,P.hp+1.5*dt);
   if(escort())TU.hp=Math.min(TU.maxHp,TU.hp+.8*dt);
 
@@ -2173,7 +2205,8 @@ function drawParts(){for(const p of parts){const a=Math.max(0,Math.min(1,p.t/p.l
 const SCROLL_TXT=['„Tikras stiprumas – ne raumenyse, o širdyje. Kovok tik tada, kai kitaip negalima.“','„Kvėpuok giliai. Ki teka kaip upė – nesulaikyk jos, leisk jai tekėti.“','„Niekada nekovok dėl savęs. Kovok dėl tų, kuriuos myli.“'];
 function pickup(it){
   sfx('pickup');
-  if(it.kind==='herb'){Q.herbs=Math.min(9,Q.herbs+1);addFloat(P.x,P.y-24,'+1 žolelė','#63c74d');return}
+  if(it.kind==='herb'){Q.herbs=Math.min(30,Q.herbs+1);addFloat(P.x,P.y-24,'+1 žolelė','#63c74d');return}
+  if(it.kind==='food'){foodAdd(it.fid,1);addFloat(P.x,P.y-24,'+1 '+FOODS[it.fid].n,'#63c74d');if(!Q.foodTip){Q.foodTip=1;pendingMsg.push([['Patarimas','Radai maisto! Jis atstato HP arba ki. Naudok: Inventorius → Naudojami. Paskutinis naudotas maistas atsiduria greitajame mygtuke (H).']])}return}
   if(it.kind==='gear'){pickGear(it);return}
   if(it.kind==='qitem'){const s=wstep();if(s&&s.t==='take')advanceW();return}
   Q.got.push(it.id);
@@ -2209,6 +2242,7 @@ function drawItem(it){
   const glow=c=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y-8,15,0,7);ctx.fill()};
   shadow(x,it.y+6,8);
   if(it.kind==='herb')spr('herb',x,y+6);
+  else if(it.kind==='food'){ctx.imageSmoothingEnabled=false;ctx.drawImage(SPX[FOODS[it.fid].ic],Math.round(x-10),Math.round(y-14),20,20)}
   else if(it.kind==='mush')spr('mush',x,y+6);
   else if(it.kind==='scroll'){glow('rgba(254,174,52,.25)');spr('scroll',x,y+6)}
   else if(it.kind==='axe'){glow('rgba(254,174,52,.25)');spr('axe',x,y+8)}
@@ -2276,9 +2310,10 @@ function render(){if(inside&&P){renderInterior();if(joy){ctx.strokeStyle='#fffff
         for(const sg of[0,Math.PI]){const a=S.a+sg,ex=P.x+Math.cos(a)*L*(sg?.35:1),ey=cy+Math.sin(a)*L*(sg?.35:1)*.85;ctx.strokeStyle='#4a2c14';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(P.x,cy);ctx.lineTo(ex,ey);ctx.stroke();ctx.strokeStyle='#c8401c';ctx.lineWidth=3;ctx.stroke()}}
       else{const a0=S.a0-S.arc/2;ctx.globalAlpha=.3*(1-k);ctx.strokeStyle='#f4f4f4';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(P.x,cy,L*.85,L*.85*.85,0,a0,S.a);ctx.stroke();ctx.globalAlpha=1;
         const ex=P.x+Math.cos(S.a)*L,ey=cy+Math.sin(S.a)*L*.85,bx=P.x-Math.cos(S.a)*8,by=cy-Math.sin(S.a)*7;ctx.strokeStyle='#4a2c14';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(ex,ey);ctx.stroke();ctx.strokeStyle='#c8401c';ctx.lineWidth=3;ctx.stroke()}}
-    {const ch=btn.A&&P.skPunch>0?P.chA:btn.B&&P.skSpin>0?P.chB:0;if(ch>.15){const k=Math.min(1,(ch-.15)/(CHARGE-.15)),full=k>=1;
+    {const ch=btn.A&&P.skPunch>0?P.chA:btn.B&&P.skSpin>0&&(P.bmode||'staff')==='staff'?P.chB:0;if(ch>.15){const k=Math.min(1,(ch-.15)/(CHARGE-.15)),full=k>=1;
       ctx.strokeStyle=full?(Math.floor(time*12)%2?'#fff':'#feae34'):'rgba(124,200,255,.85)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(P.x,P.y-12,24,-Math.PI/2,-Math.PI/2+k*Math.PI*2);ctx.stroke();
       if(full&&Math.random()<.4)puff(P.x+ri(-12,12),P.y-4,1,['#feae34','#fff'],40,.4,-60,1.5)}}
+    if(P.heal){const k=.5+.5*Math.sin(time*8);ctx.strokeStyle=`rgba(99,199,77,${.4+.3*k})`;ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(P.x,P.y+6,18+k*4,7+k*2,0,0,7);ctx.stroke();ctx.fillStyle=`rgba(168,240,128,${.12+.08*k})`;ctx.beginPath();ctx.ellipse(P.x,P.y-12,20,28,0,0,7);ctx.fill()}
     if(P.dead){const k=Math.min(1,(2.6-P.dead.t)*2.5);ctx.save();ctx.translate(P.x,P.y+8);ctx.rotate(-Math.PI/2*k*(P.fx<0?-1:1));drawSprite('hero',0,-8,P.fx,0,false,P.dead.t>2.3,false);ctx.restore();return}
     if(P.inv>0&&Math.floor(time*20)%2)return;
     drawSprite('hero',P.x,P.y,P.fx,P.fy,P.moving?(P.wd||0):false,false,heroAtk())}});
@@ -2341,7 +2376,7 @@ function drawArena(){for(const e of enemies){if(!e.boss||!e.eng||!e.alive)contin
 function activeBoss(){for(const e of enemies)if(e.boss&&e.eng&&e.alive&&(!e.cond||e.cond()))return e;return null}
 function activeBossOld(){for(const e of enemies){if(!e.boss||!e.alive||(e.cond&&!e.cond()))continue;if(e.type==='fish'){if(Q.fishOn&&Math.hypot(P.x-T(POND.x),P.y-T(POND.y))<240)return e;continue}const D=BOSSDEF[e.type];if(!D)continue;if((e.bs&&e.bs!=='move')||Math.hypot(P.x-e.sx,P.y-e.sy)<D.aggro)return e}return null}
 let lastQ='';
-function hud(){if(P){const kv=Q.kame?'flex':'none';if($('bK').style.display!==kv)$('bK').style.display=kv}
+function hud(){if(P){const kv='none';if($('bK').style.display!==kv)$('bK').style.display=kv}
   if(!P)return;
   $('lv').textContent=P.lvl;const hn=N('hero');if($('heroName').textContent!==hn)$('heroName').textContent=hn;
   const bt=Q.balls+'/7';if($('balls').textContent!==bt)$('balls').textContent=bt;
@@ -2352,8 +2387,8 @@ function hud(){if(P){const kv=Q.kame?'flex':'none';if($('bK').style.display!==kv
   if(P&&!mapOpen&&mapSeen!==questText()){$('mapNew').style.display=mapSeen===''&&Q.s===0&&Q.dummies===0?'none':'block'}
   if(qh!==lastQ){if(qCollapsed&&lastQ)$('qBadge').style.display='block';lastQ=qh;const q=$('quest');q.innerHTML='<span class="qt">UŽDUOTIS <span style="opacity:.6;font-weight:400">▲</span></span>';q.append(questText());for(const[ic,t]of sq){const sp=document.createElement('span');sp.className='sq';const im=document.createElement('img');im.className='ic';im.src=ICON[ic];sp.append(im,' '+t);q.append(sp)}}
   {const v=(P.pts||techAvail())?'block':'none';if($('stBadge').style.display!==v)$('stBadge').style.display=v;$('pts').style.display='none'}
-  const bl='LAZDA';if($('bBl').textContent!==bl){$('bBl').textContent=bl;$('icB').src=ICON.staff}
-  const ht=String(Q.herbs);if($('bHn').textContent!==ht)$('bHn').textContent=ht;
+  {const md=P.bmode||'staff';if(md==='heal'&&!(P.skHeal>0))P.bmode='staff';if(md==='kame'&&!Q.kame)P.bmode='staff';const bl={staff:'LAZDA',heal:'ATGAVIMAS',kame:'KAME'}[P.bmode||'staff'];if($('bBl').textContent!==bl){$('bBl').textContent=bl;$('icB').src=ICON[{staff:'staff',heal:'herb',kame:'kame'}[P.bmode||'staff']];$('bB').style.background={staff:'#0099db',heal:'#3e8948',kame:'#f77622'}[P.bmode||'staff']}}
+  {const qf=P.qfood||'herb',ht=String(foodN(qf));if($('bHn').textContent!==ht)$('bHn').textContent=ht;const ic=ICON[FOODS[qf].ic];if($('icH').dataset.f!==qf){$('icH').dataset.f=qf;$('icH').src=ic}}
   drawPortrait($('portrait'),'hero');
   const ct=phaseName()+' '+clockStr();if($('clockT').textContent!==ct){$('clockT').textContent=ct;$('icClock').src=ICON[isNight()?'moon':'sun']}
   const nr=nearest(),ty=nr?nr.type:'talk',lbl={talk:'KALBĖTI',enter:'ĮEITI',use:'NAUDOTI',exit:'IŠEITI',take:'PAIMTI'}[nr&&nr.k==='pcamp'?'rest':ty]||'ILSĖTIS',ic={talk:'talk',enter:'icDoor',use:'icHand',exit:'icExit',take:'icHand'}[ty];
@@ -2843,7 +2878,7 @@ WORLDS[7]={id:7,name:'Raudonasis kaspinas: Karino bokštas',sub:'Mangos 76–108
     {t:'go',p:'upa',txt:'Eik į šventąją žemę prie Karino bokšto',dlg:[['Upa','Tu irgi atėjai dėl rutulio? Mano tėtis jį saugo...']]},
     {t:'talk',n:'upa',txt:'Pasikalbėk su Upa',dlg:[['Upa','Armija pasamdė žudiką Tao Pai Pai! Jis keliauja ant savo paties išmesto stulpo!'],[G(),'Ant stulpo?! Noriu pamatyti!']]},
     {t:'boss',e:'taopaipai',txt:'Įveik žudiką Tao Pai Pai',pre:[['Tao Pai Pai','Kas trukdo? Vaikas? Mirk.']],dlg:[['Tao Pai Pai','Ne... gali... būti... Dodonpa neveikia?!'],['Pasakotojas','Tao Pai Pai sprogimo banga nubloškė į kalnus.'],['Upa','Tėtis išgelbėtas! Ačiū!']]},
-    {t:'talk',n:'karin',txt:'Užlipk į Karino bokštą ir pakalbink Kariną',dlg:[['Karinas','Tris dienas lipai? Šaunu. Šventąjį vandenį gausi tik atėmęs iš manęs!'],['Pasakotojas','Po trijų dienų gaudynių Goku pagaliau išplėšė ąsotėlį. Vanduo pasirodė paprastas... bet Goku tapo daug greitesnis.'],['Karinas','Vanduo – tik vanduo. Stipresniu tave padarė pati treniruotė. Štai senzu pupelės.']],on:()=>{Q.herbs=Math.min(9,Q.herbs+3)}},
+    {t:'talk',n:'karin',txt:'Užlipk į Karino bokštą ir pakalbink Kariną',dlg:[['Karinas','Tris dienas lipai? Šaunu. Šventąjį vandenį gausi tik atėmęs iš manęs!'],['Pasakotojas','Po trijų dienų gaudynių Goku pagaliau išplėšė ąsotėlį. Vanduo pasirodė paprastas... bet Goku tapo daug greitesnis.'],['Karinas','Vanduo – tik vanduo. Stipresniu tave padarė pati treniruotė. Štai senzu pupelės.']],on:()=>{foodAdd('senzu',3)}},
     {t:'kill',e:'rrelite',n:8,txt:'Šturmuok Raudonojo kaspino štabą (rytai)',dlg:[['Pasakotojas','Štabo vartai griūva. Raudonasis vadas slepiasi viduje...']]},
     {t:'boss',e:'blackmech',txt:'Įveik Juodojo štabo robotą',dlg:[['Pasakotojas','Robotas sprogo. Raudonojo kaspino armija – sunaikinta.'],[G(),'Seneli, tavo rutulys pas mane!']]}
   ],
@@ -3015,8 +3050,8 @@ function interactablesW(){const L=[];if(Q.pcamp)L.push({k:'pcamp',type:'use',x:Q
 function buildItemsW(){const W=curW(),q=wq();items=[];const r=rng(W.id*13+(Q.dayN||0));
   const s=W.steps[q.st];if(s&&s.t==='take'&&POI[s.p])items.push({kind:'qitem',id:'q'+W.id+'_'+q.st,x:POI[s.p].x,y:POI[s.p].y});
   (W.loot||[]).forEach(([x,y],i)=>{const id='L'+W.id+'_'+i;if(q.got.includes(id))return;const sp={x:T(x),y:T(y)};items.push({kind:'gear',id,loot:true,inst:genGear(W.lvl[1],i===0?'e':'r'),x:sp.x,y:sp.y})});
-  for(let i=0;i<(W.herbs||0);i++){let g=0;while(g++<200){const tx=2+Math.floor(r()*76),ty=2+Math.floor(r()*56);if([GRASS,DARK,SAND,FLOWER].includes(map[ty][tx])){items.push({kind:'herb',id:'wh'+i+'_'+(Q.dayN||0),x:T(tx),y:T(ty)});break}}}
-  items=items.filter(it=>!(it.kind==='herb'&&Q.got.includes(it.id)))}
+  for(let i=0;i<(W.herbs||0);i++){let g=0;while(g++<200){const tx=2+Math.floor(r()*76),ty=2+Math.floor(r()*56);if([GRASS,DARK,SAND,FLOWER].includes(map[ty][tx])){items.push(r()<.4?{kind:'herb',id:'wh'+i+'_'+(Q.dayN||0),x:T(tx),y:T(ty)}:{kind:'food',fid:['apple','mushk','apple','fish','tea'][Math.floor(r()*5)],id:'wf'+i+'_'+(Q.dayN||0),x:T(tx),y:T(ty)});break}}}
+  items=items.filter(it=>!((it.kind==='herb'||it.kind==='food')&&Q.got.includes(it.id)))}
 function gateBlockW(x,y){const W=curW(),q=wq(),tx=x/TS,ty=y/TS;for(const g of(W.gates||[])){const[a,b,c,d]=g.r;if(tx>=a&&tx<=c+1&&ty>=b&&ty<=d+1&&q.st<g.until)return{msg:()=>g.msg}}return null}
 function safeAtW(x,y){if(Q&&Q.pcamp&&Math.hypot(x-Q.pcamp.x,y-Q.pcamp.y)<4*TS)return true;if(Math.hypot(x-SPAWN.x,y-SPAWN.y)<5*TS)return true;for(const[sx,sy,r]of(curW().safe||[]))if(Math.hypot(x-T(sx),y-T(sy))<r*TS)return true;return false}
 function npcVisibleW(n){const st=wq().st;if(n.from!=null&&st<n.from)return false;if(n.to!=null&&st>=n.to)return false;if(n.day&&isNight())return false;return true}
@@ -3101,7 +3136,7 @@ function doNew(){auInit();try{localStorage.removeItem(SKEY)}catch(e){}$('confirm
 $('newBtn').onclick=()=>{const sv=load();if(!sv){doNew();return}$('confirmTxt').textContent=`Turi išsaugotą žaidimą (Lv ${sv.P.lvl}, žaista ~${Math.round((sv.Q.play||0)/60)} min). Pradėjus iš naujo, jis bus ištrintas visam laikui.`;$('confirmOv').style.display='flex'};
 $('confYes').onclick=doNew;$('confNo').onclick=()=>{$('confirmOv').style.display='none'};
 requestAnimationFrame(loop);
-const GAME_VER='1.2.0';
+const GAME_VER='1.3.0';
 $('verTxt').textContent='Versija '+GAME_VER;
 const onPages=/github\.io$/.test(location.hostname);
 async function checkUpdate(manual){
