@@ -771,7 +771,11 @@ function applyGateTiles(){let ch=false;GATE_SET.clear();for(const g of GATES2){c
 function refreshGates(){if(applyGateTiles())buildMapCache()}
 function gateBlock(x,y){return null}
 function canMove(x,y,r){return!solidAt(x-r,y-r)&&!solidAt(x+r,y-r)&&!solidAt(x-r,y+r)&&!solidAt(x+r,y+r)}
-function moveEnt(e,dx,dy,r){const pl=e===P;if(canMove(e.x+dx,e.y,r)&&!(pl&&gateBlock(e.x+dx,e.y)&&!gateBlock(e.x,e.y)))e.x+=dx;if(canMove(e.x,e.y+dy,r)&&!(pl&&gateBlock(e.x,e.y+dy)&&!gateBlock(e.x,e.y)))e.y+=dy;if(pl&&(dx||dy)&&tileAt(e.x+Math.sign(dx)*16,e.y+Math.sign(dy)*16)===BROKEN&&time-gateMsgT>3){gateMsgT=time;addFloat(e.x,e.y-48,'Tiltas sulūžęs! Kol kas per upę nepereisi.','#ffcf6a')}if(pl&&(dx||dy)){const tx=Math.floor((e.x+Math.sign(dx)*16)/TS),ty=Math.floor((e.y+Math.sign(dy)*16)/TS),R=GATE_SET.get(tx+','+ty);if(R&&time-gateMsgT>3){gateMsgT=time;addFloat(e.x,e.y-48,R.msg(),'#ffcf6a')}}}
+function solidFoe(e){return e.alive&&e.ai!=='none'&&!(e.dying>0)&&(!e.cond||e.cond())&&!e.sub&&!(e.jh>0)&&e.ai!=='bat'&&!e.fly&&!e.air}
+function bodyBlock(o,nx,ny){if(typeof enemies==='undefined'||!P||inside)return false;const chk=(a,ax,ay,b)=>{const m=9+Math.max(8,(b.r||12)*.6),d1=Math.hypot(ax-b.x,ay-b.y);return d1<m&&d1<Math.hypot(a.x-b.x,a.y-b.y)-.01};
+ if(o===P){for(const e of enemies)if(solidFoe(e)&&chk(P,nx,ny,e))return true;return false}
+ if(o.ai&&o.ai!=='none'&&enemies.includes(o)&&solidFoe(o)&&!P.dead){const m=9+Math.max(8,(o.r||12)*.6),d1=Math.hypot(nx-P.x,ny-P.y);return d1<m&&d1<Math.hypot(o.x-P.x,o.y-P.y)-.01}return false}
+function moveEnt(e,dx,dy,r){const pl=e===P;if(canMove(e.x+dx,e.y,r)&&!(pl&&gateBlock(e.x+dx,e.y)&&!gateBlock(e.x,e.y))&&!bodyBlock(e,e.x+dx,e.y))e.x+=dx;if(canMove(e.x,e.y+dy,r)&&!(pl&&gateBlock(e.x,e.y+dy)&&!gateBlock(e.x,e.y))&&!bodyBlock(e,e.x,e.y+dy))e.y+=dy;if(pl&&(dx||dy)&&tileAt(e.x+Math.sign(dx)*16,e.y+Math.sign(dy)*16)===BROKEN&&time-gateMsgT>3){gateMsgT=time;addFloat(e.x,e.y-48,'Tiltas sulūžęs! Kol kas per upę nepereisi.','#ffcf6a')}if(pl&&(dx||dy)){const tx=Math.floor((e.x+Math.sign(dx)*16)/TS),ty=Math.floor((e.y+Math.sign(dy)*16)/TS),R=GATE_SET.get(tx+','+ty);if(R&&time-gateMsgT>3){gateMsgT=time;addFloat(e.x,e.y-48,R.msg(),'#ffcf6a')}}}
 
 /* ================= BUILDINGS & VEHICLE SPRITES (original pixel art) ================= */
 function hutSheet(){return mkSheet(82,80,1,1,(A)=>{const{R,P,E}=A;
@@ -2197,7 +2201,7 @@ function update(dt){if(inside&&P){time+=dt;if(flash>0)flash-=dt;for(const f of f
   tMoving=escort()&&follow(TU,P.x-P.fx*40,P.y-P.fy*40,dt,72);
 
   for(const e of enemies)updEnemy(e,dt);
-  updateNPCs(dt);pushFromNPCs(P,9);pushFromBlockers(P,9);pushFromEnemies(P,9);if(bulmaVisible()){pushFromNPCs(B,8);pushFromBlockers(B,8);softPush(B,8)}if(W1()&&escort())softPush(TU,14);
+  updateNPCs(dt);pushFromNPCs(P,9);pushFromBlockers(P,9);if(bulmaVisible()){pushFromNPCs(B,8);pushFromBlockers(B,8);softPush(B,8)}if(W1()&&escort())softPush(TU,14);
 
   if(W1()&&onMountainPath()&&Q.s>=7){rockT-=dt;if(rockT<=0){rockT=1.4;hazards.push({x:P.x+P.fx*50+ri(-30,30),y:P.y+P.fy*50+ri(-30,30),t:1.1,dmg:21})}}
   for(const h of hazards){h.t-=dt;if(h.t<=0&&!h.done){h.done=true;h.boom=.35;if(Math.hypot(P.x-h.x,P.y-h.y)<260)sfx('thud');if(Math.hypot(P.x-h.x,P.y-h.y)<24)hitPlayer(h.dmg)}else if(h.done)h.boom-=dt}
@@ -3162,7 +3166,7 @@ function doNew(){auInit();try{localStorage.removeItem(SKEY)}catch(e){}$('confirm
 $('newBtn').onclick=()=>{const sv=load();if(!sv){doNew();return}$('confirmTxt').textContent=`Turi išsaugotą žaidimą (Lv ${sv.P.lvl}, žaista ~${Math.round((sv.Q.play||0)/60)} min). Pradėjus iš naujo, jis bus ištrintas visam laikui.`;$('confirmOv').style.display='flex'};
 $('confYes').onclick=doNew;$('confNo').onclick=()=>{$('confirmOv').style.display='none'};
 requestAnimationFrame(loop);
-const GAME_VER='1.3.6';
+const GAME_VER='1.3.7';
 document.addEventListener('contextmenu',e=>{if(!/INPUT|TEXTAREA/.test(e.target.tagName))e.preventDefault()});document.addEventListener('selectstart',e=>{if(!/INPUT|TEXTAREA/.test(e.target.tagName))e.preventDefault()});document.querySelectorAll('img').forEach(i=>i.draggable=false);
 $('verTxt').textContent='Versija '+GAME_VER;
 const onPages=/github\.io$/.test(location.hostname);
