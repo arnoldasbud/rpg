@@ -60,6 +60,7 @@ body.onTitle #hud,body.onTitle .tbtn,body.onTitle .cbtn,body.onTitle #clock,body
 #dialog .txt{text-shadow:1px 1px 0 #181425}
 #dialog .nxt{position:absolute;right:12px;bottom:4px;font-size:12px;color:#feae34;animation:bob .6s steps(2) infinite}
 @keyframes bob{50%{transform:translateY(-3px)}}
+html,body,.cbtn,.tbtn,canvas,img,button,.ov,.card{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}.cbtn img,.tbtn img,.cbtn span{pointer-events:none}
 .xbtn{position:fixed;top:10px;right:10px;width:40px;height:40px;z-index:30;background:#e43b44!important;color:#fff!important;font:bold 22px 'Pixelify Sans',monospace!important;margin:0!important;border:0;box-shadow:0 0 0 3px #181425,inset -3px -3px 0 rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
 .ov{position:fixed;inset:0;background:rgba(24,20,37,.85);display:none;align-items:center;justify-content:center;z-index:10}
 .card{padding:18px;width:min(88vw,400px);max-height:86vh;overflow:auto;box-sizing:border-box;touch-action:pan-y;-webkit-overflow-scrolling:touch}
@@ -3140,7 +3141,8 @@ function doNew(){auInit();try{localStorage.removeItem(SKEY)}catch(e){}$('confirm
 $('newBtn').onclick=()=>{const sv=load();if(!sv){doNew();return}$('confirmTxt').textContent=`Turi išsaugotą žaidimą (Lv ${sv.P.lvl}, žaista ~${Math.round((sv.Q.play||0)/60)} min). Pradėjus iš naujo, jis bus ištrintas visam laikui.`;$('confirmOv').style.display='flex'};
 $('confYes').onclick=doNew;$('confNo').onclick=()=>{$('confirmOv').style.display='none'};
 requestAnimationFrame(loop);
-const GAME_VER='1.3.2';
+const GAME_VER='1.3.3';
+document.addEventListener('contextmenu',e=>{if(!/INPUT|TEXTAREA/.test(e.target.tagName))e.preventDefault()});document.addEventListener('selectstart',e=>{if(!/INPUT|TEXTAREA/.test(e.target.tagName))e.preventDefault()});document.querySelectorAll('img').forEach(i=>i.draggable=false);
 $('verTxt').textContent='Versija '+GAME_VER;
 const onPages=/github\.io$/.test(location.hostname);
 async function checkUpdate(manual){
