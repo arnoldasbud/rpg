@@ -170,6 +170,7 @@ ol{padding-left:22px;margin:6px 0}ol li{margin:3px 0}
   <div>1 skyrius: Paozu kalnas</div>
   <p class="small">Kairė pusė – judėjimas. Tikslas – žemėlapyje ⚑.<br>Klaviatūra: WASD, J, K, E, H, F, M.</p>
   <button class="big" id="contBtn" style="display:none">Tęsti</button><div id="saveInfo"></div>
+  <div id="verRow" class="small" style="margin-top:6px;display:flex;gap:8px;align-items:center;justify-content:center"><span id="verTxt"></span><button id="updBtn" style="font-size:11px">Tikrinti atnaujinimus</button></div>
   <button class="big" id="newBtn">Naujas žaidimas</button>
 </div></div>
 
@@ -3100,6 +3101,19 @@ function doNew(){auInit();try{localStorage.removeItem(SKEY)}catch(e){}$('confirm
 $('newBtn').onclick=()=>{const sv=load();if(!sv){doNew();return}$('confirmTxt').textContent=`Turi išsaugotą žaidimą (Lv ${sv.P.lvl}, žaista ~${Math.round((sv.Q.play||0)/60)} min). Pradėjus iš naujo, jis bus ištrintas visam laikui.`;$('confirmOv').style.display='flex'};
 $('confYes').onclick=doNew;$('confNo').onclick=()=>{$('confirmOv').style.display='none'};
 requestAnimationFrame(loop);
+const GAME_VER='1.2.0';
+$('verTxt').textContent='Versija '+GAME_VER;
+const onPages=/github\.io$/.test(location.hostname);
+async function checkUpdate(manual){
+  if(!onPages){if(manual)$('verTxt').textContent='Versija '+GAME_VER+' · atnaujinimai veikia įdiegtoje versijoje (github.io)';return}
+  try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});const j=await r.json();
+    if(j.v&&j.v!==GAME_VER){$('verTxt').innerHTML='Yra nauja versija <b style="color:#63c74d">'+j.v+'</b>'+(j.note?' – '+j.note:'');$('updBtn').textContent='Atnaujinti dabar';$('updBtn').onclick=doUpdate;$('updBtn').style.background='#63c74d'}
+    else if(manual)$('verTxt').textContent='Versija '+GAME_VER+' – naujausia ✔'}
+  catch(e){if(manual)$('verTxt').textContent='Versija '+GAME_VER+' · nepavyko patikrinti (nėra interneto?)'}}
+async function doUpdate(){$('verTxt').textContent='Atnaujinama...';try{if(P)save()}catch(e){}
+  try{if(window.caches){for(const k of await caches.keys())await caches.delete(k)}if(navigator.serviceWorker){for(const r of await navigator.serviceWorker.getRegistrations())await r.update()}}catch(e){}
+  location.replace(location.pathname+'?v='+Date.now())}
+$('updBtn').onclick=()=>checkUpdate(true);checkUpdate(false);
 if('serviceWorker'in navigator&&/^https?:/.test(location.protocol)&&/github\.io$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
