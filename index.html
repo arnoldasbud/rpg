@@ -50,6 +50,7 @@ body.onTitle #hud,body.onTitle .tbtn,body.onTitle .cbtn,body.onTitle #clock,body
 #bA{right:18px;bottom:30px;width:80px;height:80px;background:#e43b44}#bA img{width:36px;height:36px}
 #bB{right:106px;bottom:20px;width:64px;height:64px;background:#0099db}#bB img{width:28px;height:28px}
 #bE{right:30px;bottom:122px;width:58px;height:58px;background:#3e8948}#bE img{width:28px;height:28px}
+#bK{right:176px;bottom:30px;width:58px;height:58px;background:#feae34}#bK img{width:28px;height:28px}#bK span{color:#181425}
 #bH{right:100px;bottom:96px;width:52px;height:52px;background:#5a6988}#bH img{width:24px;height:24px}
 #dialog{position:fixed;left:8px;right:8px;bottom:8px;padding:12px 14px 20px;font-size:15px;line-height:1.4;display:none;z-index:5;min-height:64px;background:#262b44}
 #dialog .in{display:flex;gap:12px;align-items:flex-start}
@@ -105,6 +106,7 @@ ol{padding-left:22px;margin:6px 0}ol li{margin:3px 0}
 <div id="quest" class="px"></div>
 <button class="tbtn px" id="qIcon"><img id="icQ"><span id="qBadge">!</span></button>
 <div id="bossbar" class="px"><div id="bossName"></div><div class="bar"><i></i></div></div>
+<div class="cbtn" id="bK" style="display:none"><img id="icK"><span>KAME</span></div>
 <div class="cbtn" id="bH"><img id="icH"><span id="bHn">2</span></div>
 <div class="cbtn" id="bE"><img id="icE"><span id="bEl">KALBĖTI</span></div>
 <div class="cbtn" id="bB"><img id="icB"><span id="bBl">LAZDA</span></div>
@@ -139,6 +141,7 @@ ol{padding-left:22px;margin:6px 0}ol li{margin:3px 0}
     <button id="pmStats"><img id="pmIcStat">Statai<span class="badge" id="pmPts" style="display:none"></span></button>
     <button id="pmInv"><img id="pmIcInv">Inventorius</button>
     <button id="pmMap"><img id="pmIcMap">Žemėlapis</button>
+    <button id="pmTravel"><img id="pmIcTravel">Kinto kelionė</button>
     <button id="pmCamp"><img id="pmIcCamp">Kurti laužą</button>
     <button id="pmSpr"><img id="pmIcPal">Spraitai ir vardai</button>
     <button id="pmSnd"><img id="pmIcSnd">Garsas</button>
@@ -182,17 +185,26 @@ ol{padding-left:22px;margin:6px 0}ol li{margin:3px 0}
   <button class="big" id="ynYes" style="background:#a82830;color:#fff">Kovoti!</button>
   <button class="big" id="ynNo">Dar ne – atsitraukti</button>
 </div></div>
+<div class="ov" id="worldOv"><div class="card px" style="max-width:560px">
+  <h2>Kinto kelionė</h2>
+  <canvas id="worldCv" style="width:100%;image-rendering:pixelated;border:2px solid #3a4466"></canvas>
+  <div id="worldList" style="max-height:38vh;overflow:auto;margin-top:6px"></div>
+  <button class="big" id="worldClose">Uždaryti</button>
+</div></div>
+<div class="ov" id="travelOv" style="flex-direction:column;background:#2a5aa0"><canvas id="travelCv" style="width:100%;max-width:900px;image-rendering:pixelated"></canvas><div class="px" id="travelName" style="color:#fff;font-size:20px;margin-top:8px"></div></div>
 <div class="ov" id="endOv"><div class="card px">
   <h2>1 skyrius įveiktas!</h2>
   <p id="endStats"></p>
   <div class="grp">Dragon Ball</div>
   <ol>
-    <li>Paozu kalnas ✔</li><li>Oolongo kaimas</li><li>Dykumos plėšikas Yamcha</li><li>Ugnies kalnas ir Jaučių karalius</li><li>Pilafo pilis</li><li>21-asis turnyras</li><li>Raudonoji armija</li><li>Piccolo Daimao</li>
+    <li>Paozu kalnas ✔</li><li>Oolongas ir Diablo dykuma</li><li>Ugnies kalnas ir Pilafo pilis</li><li>Kame Hause treniruotės</li><li>21-asis Tenkaiči turnyras</li><li>Raudonasis kaspinas: Šiaurė</li><li>Raudonasis kaspinas: Karino bokštas</li><li>Būrėjos Babos rūmai</li><li>22-asis turnyras</li><li>Karalius Piccolo</li><li>23-iasis turnyras</li>
   </ol>
+  <p class="small">Kviesk Kinto debesėlį ir skrisk į 2 pasaulį (nuo Lv 10).</p>
   <div class="grp">Z</div>
   <ol start="9"><li>Raditzas ir Saiyanai</li><li>Namekas ir Frieza</li><li>Androidai ir Cellas</li><li>Majin Buu</li></ol>
   <div class="grp">Super</div>
   <ol start="13"><li>Dievų mūšis</li><li>Friezos sugrįžimas</li><li>6-osios visatos turnyras</li><li>Ateities Trunksas</li><li>Jėgos turnyras</li></ol>
+  <button class="big" id="endKinto" style="background:#feae34">Kviesti Kinto debesėlį</button>
   <button class="big" id="endClose">Toliau tyrinėti</button>
 </div></div>
 
@@ -740,7 +752,7 @@ const REGIONS=[
   {test:(x,y)=>y>T(43.5)&&y<T(51)&&x>T(26)&&x<T(52),ok:()=>Q.s>=8,msg:()=>Q.s<6?'Gilusis miškas pernelyg tankus ir pavojingas. Dar ne laikas.':'Bulma: „Ne ten! Pirma – reikalų turim kitur.“ (Atsidarys vėliau)'},
   {test:(x,y)=>y>=T(51)&&x>T(26),ok:()=>Q.s>=11,msg:()=>'Kelią į pajūrį saugo kažkas didelio... Pirma įveik miško pavojų.'}];
 let gateMsgT=0;
-function gateBlock(x,y){if(inside||!Q)return null;for(const R of REGIONS)if(R.test(x,y)&&!R.ok())return R;return null}
+function gateBlock(x,y){if(inside||!Q)return null;if(!W1())return gateBlockW(x,y);for(const R of REGIONS)if(R.test(x,y)&&!R.ok())return R;return null}
 function canMove(x,y,r){return!solidAt(x-r,y-r)&&!solidAt(x+r,y-r)&&!solidAt(x-r,y+r)&&!solidAt(x+r,y+r)}
 function moveEnt(e,dx,dy,r){const pl=e===P;if(canMove(e.x+dx,e.y,r)&&!(pl&&gateBlock(e.x+dx,e.y)&&!gateBlock(e.x,e.y)))e.x+=dx;if(canMove(e.x,e.y+dy,r)&&!(pl&&gateBlock(e.x,e.y+dy)&&!gateBlock(e.x,e.y)))e.y+=dy;if(pl&&(dx||dy)&&tileAt(e.x+Math.sign(dx)*16,e.y+Math.sign(dy)*16)===BROKEN&&time-gateMsgT>3){gateMsgT=time;addFloat(e.x,e.y-48,'Tiltas sulūžęs! Kol kas per upę nepereisi.','#ffcf6a')}if(pl&&(dx||dy)){const R=gateBlock(e.x+Math.sign(dx)*14,e.y+Math.sign(dy)*14);if(R&&time-gateMsgT>3){gateMsgT=time;addFloat(e.x,e.y-48,R.msg(),'#ffcf6a')}}}
 
@@ -894,7 +906,7 @@ let TEX={};
 function canopyTex(dark,seed){const W=38,H=36;return mkSheet(W,H,1,1,(A)=>{const{P}=A;const r=rng(seed);
   const blobs=[[19,19,16,14],[9,20,8,9],[29,20,8,9],[19,9,12,8],[12,12,7,6],[26,12,7,6]];
   const inside=(x,y)=>blobs.some(([cx,cy,rx,ry])=>{const a=(x+.5-cx)/rx,b=(y+.5-cy)/ry;return a*a+b*b<=1});
-  const C=dark?['#6c9a58','#4c7c44','#375e34','#28472a']:['#90c06c','#66a050','#467f3e','#316034'];
+  const C=(BIO&&(dark?(BIO.canopyD||BIO.canopy):BIO.canopy))||(dark?['#6c9a58','#4c7c44','#375e34','#28472a']:['#90c06c','#66a050','#467f3e','#316034']);
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(!inside(x,y))continue;const v=(x-19)*.4+(y-18)*.55;let c=v<-6?C[0]:v<-1?C[1]:v<5?C[2]:C[3];if(r()<.08)c=C[3];if(r()<.04&&v<0)c=C[0];P(x,y,c)}},'#12301a')}
 function buildTex(){
   TEX.canopy=[canopyTex(false,7),canopyTex(false,19)];TEX.canopyD=[canopyTex(true,23),canopyTex(true,31)];
@@ -973,6 +985,7 @@ function buildMapCache(){
     else if(c===2){const w=Math.sin(ax*.35+Math.sin(ay*.18)*2.2+ay*.08);if(w>.93){r+=14;g+=12;b+=8}else if(w<-.96){r-=12;g-=12;b-=10}}
     else if(c===4){const L=vnoise(ax/40,ay/40,16);if(L<.4){r-=12;g-=10;b-=4}else if(L>.65){r+=8;g+=8;b+=6}}
     if(edge){const e=hx(edge);r=e[0];g=e[1];b=e[2]}
+    if(BIO){const q=bioPix(c,r,g,b);if(q){r=q[0];g=q[1];b=q[2]}}
     r=Math.max(0,Math.min(255,r|0));g=Math.max(0,Math.min(255,g|0));b=Math.max(0,Math.min(255,b|0));
     const o=(ay*AW+ax)*4;D[o]=r;D[o+1]=g;D[o+2]=b;D[o+3]=255}
   og.putImageData(img,0,0);
@@ -1002,7 +1015,7 @@ function puff(x,y,n,cols,sp,life,grav,size,up){for(let i=0;i<n;i++){const a=Math
 let B={x:0,y:0},TU={x:0,y:0,hp:60,maxHp:60},RO={x:0,y:0};
 function newPlayer(){return{kir:1,crt:0,agi:0,x:SPAWN.x,y:SPAWN.y,fx:0,fy:1,lck:0,lvl:1,xp:0,hp:70,maxHp:70,ki:30,maxKi:30,str:5,def:0,kip:5,pts:0,skP:0,skPunch:0,skSpin:0,stPow:0,stRng:0,stArc:0,fist:0,hand:0,gear:{eq:{},inv:[]},chA:0,chB:0,atkT:0,kiT:0,poleT:0,inv:0,lastHit:0,moving:false}}
 function newQuest(){return{tod:7,fire:false,chopped:[],s:0,dummies:0,fishOn:false,balls:1,kame:false,night:false,wood:0,rocks:0,herbs:2,got:[],sq1:0,sq2:0,scrolls:0,tkDead:false,kills:0,startT:Date.now(),play:0}}
-const need=l=>Math.floor(25*Math.pow(l,1.6));
+const need=l=>Math.floor(20*Math.pow(l,1.5));
 
 const ETYPES={
   dummy:{hp:60,atk:0,spd:0,xp:0,r:11,ai:'none'},
@@ -1022,7 +1035,7 @@ const ETYPES={
 function mkE(type,x,y,extra){const t=ETYPES[type];return Object.assign({def:t.def||0,rec:t.rec||0,type,maxHp:t.hp,hp:t.hp,atk:t.atk,spd:t.spd,xp:t.xp,r:t.r,ai:t.ai,fly:!!t.fly,boss:!!t.boss,only:t.only,chg:t.chg||0,
   x,y,sx:x,sy:y,alive:true,cd:0,resp:0,hurt:0,dashT:1.5+Math.random()*2,dash:0,vx:0,vy:0,respawn:(!t.boss||t.respawnable)&&t.ai!=='none'},extra||{})}
 let pondTiles=[];
-function spawnEnemies(){
+function spawnEnemies(){if(!W1()){spawnWorldEnemies();applyElite();return}
   enemies=[];const r=rng(99);
   const ok=t=>t===GRASS||t===FLOWER||t===DARK||t===PATH;
   const place=(type,x0,y0,x1,y1,n,extra)=>{let c=0,g=0;while(c<n&&g++<3000){const tx=x0+Math.floor(r()*(x1-x0+1)),ty=y0+Math.floor(r()*(y1-y0+1));if(ok(map[ty][tx])&&Math.hypot(tx-55,ty-46)>5.5&&Math.hypot(tx-49,ty-33)>7&&(((tx-44)/16)**2+((ty-24)/11)**2>1)&&Math.hypot(tx-9,ty-8)>13){enemies.push(mkE(type,T(tx),T(ty),extra));c++}}};
@@ -1041,17 +1054,17 @@ function spawnEnemies(){
   enemies.push(mkE('bear',TUB.x+70,TUB.y+20));
   ROCKS.forEach(([x,y])=>enemies.push(mkE('rock',T(x),T(y),{respawn:false})));
   pondTiles=[];for(let y=11;y<=23;y++)for(let x=POND.x-7;x<=POND.x+7;x++)if(map[y][x]===WATER&&Math.hypot(x+.5-POND.x,(y+.5-POND.y)*1.2)<4.6)pondTiles.push([x,y]);
-  syncBosses();
+  syncBosses();applyElite();
 }
 function boss(t){return enemies.find(e=>e.type===t)}
-function syncBosses(){
+function syncBosses(){if(!W1())return;
   const s=Q.s;
   boss('fish').alive=s===1&&Q.fishOn;boss('ptero').alive=s===7;boss('bear').alive=s===10;
   if(!Q.tkDead)boss('tigerking').alive=true;
   for(const e of enemies)if(e.type==='rock')e.alive=s===13&&e.alive!==false?e.alive:s===13&&!e.broke;
 
 }
-function buildItems(){
+function buildItems(){if(!W1()){buildItemsW();return}
   items=[];
   COLLECT.mush.forEach(([x,y],i)=>items.push({kind:'mush',id:'m'+i,x:T(x),y:T(y)}));
   COLLECT.scroll.forEach(([x,y],i)=>items.push({kind:'scroll',id:'s'+i,x:T(x),y:T(y)}));
@@ -1069,7 +1082,7 @@ addEventListener('visibilitychange',()=>{if(document.hidden)autoSave(false)});ad
 function load(){try{const s=JSON.parse(localStorage.getItem(SKEY));if(s&&s.P)return s}catch(e){}return null}
 
 function startGame(saved){
-  Q=saved?Object.assign(newQuest(),saved.Q):newQuest();genMap();buildMapCache();
+  Q=saved?Object.assign(newQuest(),saved.Q):newQuest();WID=(saved&&Q.wid)||1;if(!WORLDS[WID])WID=1;TEX={};BIO=WID===1?null:BIOMES[curW().biome];if(WID===1)genMap();else genWorld(curW());buildMapCache();
   if(saved){P=Object.assign(newPlayer(),saved.P);if(saved.P&&saved.P.skP==null)P.skP=Math.max(0,P.lvl-1);if(saved.P&&saved.P.stPow==null)P.skP+=Math.max(0,P.lvl-1);if(saved.P&&saved.P.fist==null)P.skP+=Math.max(0,P.lvl-1);if(P.skP){P.pts=(P.pts||0)+P.skP;P.skP=0}P.chA=P.chB=0;P.spin=null;P.sleep=null;B=saved.B||{x:HOME.x,y:HOME.y};TU=Object.assign({x:TUS.x,y:TUS.y,hp:60,maxHp:60},saved.TU);RO=saved.RO||RO;
     if(Q.s===10){Q.s=9}if(Q.s===7){P.x=T(60);P.y=T(28)}if(Q.s===1)Q.fishOn=false;if(!RO.x)RO={x:BEACH.x-30,y:BEACH.y}}
   else{P=newPlayer();B={x:CAR.x,y:CAR.y};TU={x:TUS.x,y:TUS.y,hp:60,maxHp:60};RO={x:BEACH.x-30,y:BEACH.y}}
@@ -1337,13 +1350,13 @@ function npcSay(n,arr){const t=arr[Math.floor(Math.random()*arr.length)];n.bub={
 function npcHit(n){const ty=npcType(n);npcSay(n,NPC_HIT[ty]||['Ei!']);n.hop=.35;sfx('blip');
   if(['cat','chick','dog'].includes(ty)||n.kid){const a=Math.atan2(n.y-P.y,n.x-P.x);n.tg={x:n.x+Math.cos(a)*70,y:n.y+Math.sin(a)*50};n.boost=1.2;n.wt=0}
   if(ty==='chick')puff(n.x,n.y-6,8,['#f4f4f4','#e8e8f0'],90,.7,120,2);if(ty==='cat')puff(n.x,n.y-8,4,['#f0a040'],60,.4,0,2)}
-function blockers(){const L=[];if(Q.s>=3){L.push({x:CAR.x-22,y:CAR.y,r:16},{x:CAR.x+2,y:CAR.y,r:16},{x:CAR.x+24,y:CAR.y,r:14})}if(Q.s>=5)L.push({x:CAMP.x,y:CAMP.y+4,r:13});if(Q.pcamp)L.push({x:Q.pcamp.x,y:Q.pcamp.y+4,r:12});
+function blockers(){const L=[];if(W1()&&Q.s>=3){L.push({x:CAR.x-22,y:CAR.y,r:16},{x:CAR.x+2,y:CAR.y,r:16},{x:CAR.x+24,y:CAR.y,r:14})}if(W1()&&Q.s>=5)L.push({x:CAMP.x,y:CAMP.y+4,r:13});if(Q.pcamp)L.push({x:Q.pcamp.x,y:Q.pcamp.y+4,r:12});
   for(const e of enemies){if(e.ai!=='none')continue;if(e.type==='drytree'){if(e.cond&&!e.cond())continue;L.push({x:e.x,y:e.y+4,r:11})}else if(e.alive&&(!e.cond||e.cond()))L.push({x:e.x,y:e.y+4,r:e.type==='rock'?16:10})}
   for(const it of items)L.push({x:it.x,y:it.y+2,r:8});return L}
 function pushFromBlockers(o,r){for(const b of blockers()){const dx=o.x-b.x,dy=o.y-b.y,d=Math.hypot(dx,dy)||.01,m=r+b.r;if(d<m)moveEnt(o,dx/d*(m-d),dy/d*(m-d),9)}}
 function pushFromNPCs(o,r){for(const n of NPCS){if(!npcVisible(n))continue;const dx=o.x-n.x,dy=o.y-n.y,d=Math.hypot(dx,dy)||.01,m=r+npcRad(n);if(d<m){const k=(m-d);moveEnt(o,dx/d*k,dy/d*k,9);if(o===P){n.bumpT=(n.bumpT||0)+1/60;if(n.bumpT>.5&&!(n.bub&&n.bub.t>0)&&time-(n.lastBump||-9)>4){n.lastBump=time;n.bumpT=0;npcSay(n,NPC_BUMP[npcType(n)]||['Ei!'])}}}}}
-function spawnNPCs(){NPCS=NPC_DEF.map(d=>({...d,x:T(d.at[0]),y:T(d.at[1]),hx:T(d.at[0]),hy:T(d.at[1]),fx:0,fy:1,tg:null,wt:Math.random()*2,mv:false,li:0}))}
-const npcVisible=n=>{const t=tod();if((n.kid||n.k==='dog'||n.k==='chick')&&(t>=18.5||t<6.5))return false;if((n.day||n.id==='oldman')&&isNight())return false;return true};
+function spawnNPCs(){if(!W1()){spawnNPCsW();return}NPCS=NPC_DEF.map(d=>({...d,x:T(d.at[0]),y:T(d.at[1]),hx:T(d.at[0]),hy:T(d.at[1]),fx:0,fy:1,tg:null,wt:Math.random()*2,mv:false,li:0}))}
+const npcVisible=n=>{if(!W1())return npcVisibleW(n);const t=tod();if((n.kid||n.k==='dog'||n.k==='chick')&&(t>=18.5||t<6.5))return false;if((n.day||n.id==='oldman')&&isNight())return false;return true};
 const villagersHome=()=>isNight();
 function eAtk(e){return Math.round(e.atk*(isNight()?1.35:1))}
 function updateNPCs(dt){for(const n of NPCS){if(n.bub&&n.bub.t>0)n.bub.t-=dt;if(n.hop>0)n.hop-=dt;if(n.boost>0)n.boost-=dt;if(!npcVisible(n)||!n.spd){n.mv=false;continue}
@@ -1359,6 +1372,7 @@ function drawNPC(n){
   if(n.k==='chick'&&!n.mv&&n.peck){drawSprite('chick',n.x,n.y,n.fx<0?-1:1,0,true,false,{type:'punch',p:(time*1.5+n.hx)%1})}
   else drawSprite(n.k,n.x,n.y,n.fx||0,n.fy||1,n.mv?(BUILTIN[n.k]&&BUILTIN[n.k].stepPx?(n.wd||0):true):false,false,false);
   if(hy)ctx.restore();
+  if(!W1()){const s=wstep();if(s&&s.t==='talk'&&s.n===n.id)bubble(n.x,n.y-((BUILTIN[n.k]&&BUILTIN[n.k].h)||44)-6,'!')}
 }
 function drawBubbles(){ctx.font='bold 10px "Pixelify Sans",monospace';ctx.textAlign='center';for(const n of NPCS){if(!n.bub||n.bub.t<=0||!npcVisible(n))continue;const top=n.y-(n.k==='cow'?52:n.kid?50:n.k==='chick'||n.k==='cat'?32:62),w=Math.ceil(ctx.measureText(n.bub.txt).width)+12;ctx.globalAlpha=Math.min(1,n.bub.t*2);const x=Math.round(n.x-w/2),y=Math.round(top-16);ctx.fillStyle='#181425';ctx.fillRect(x-2,y-2,w+4,20);ctx.fillRect(n.x-3,y+18,6,4);ctx.fillStyle='#f4f4f4';ctx.fillRect(x,y,w,16);ctx.fillRect(n.x-2,y+16,4,4);ctx.fillStyle='#262b44';ctx.fillText(n.bub.txt,n.x,y+12)}ctx.globalAlpha=1}
 
@@ -1371,7 +1385,7 @@ function drawPortrait(c,k,force){const u=SPR[k];const s=(u&&u.tex)?u:BUILTIN[k];
 let qCollapsed=false;try{qCollapsed=localStorage.getItem('kiLegendosQ')==='1'}catch(e){}
 function setQ(c){qCollapsed=c;try{localStorage.setItem('kiLegendosQ',c?'1':'0')}catch(e){}$('quest').style.display=c?'none':'block';$('qIcon').style.display=c?'flex':'none';if(!c)$('qBadge').style.display='none';sfx('blip')}
 $('quest').addEventListener('pointerdown',e=>{e.stopPropagation();setQ(true)});$('qIcon').addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();setQ(false)});
-function initIcons(){$('icStat').src=ICON.icStat;$('icInv').src=ICON.icBag;$('pmIcCamp').src=ICON.wood;$('icMenu').src=ICON.icMenu;$('pmIcStat').src=ICON.icStat;$('pmIcInv').src=ICON.icBag;$('pmIcMap').src=ICON.icMap;$('pmIcPal').src=ICON.icPal;$('pmIcSnd').src=ICON.sndOn;$('pmIcSave').src=ICON.icSave;$('pmIcExit').src=ICON.icExit;$('icQ').src=ICON.scroll;if(qCollapsed){$('quest').style.display='none';$('qIcon').style.display='flex'}$('icMap').src=ICON.icMap;$('icPal').src=ICON.icPal;$('icStat').src=ICON.icStat;$('icSnd').src=ICON.sndOn;$('icA').src=ICON.fist;$('icB').src=ICON.staff;$('icE').src=ICON.talk;$('icH').src=ICON.herb;$('icOrb').src=ICON.icOrb;
+function initIcons(){$('icK').src=ICON.kame;$('pmIcTravel').src=ICON.cloud;$('icStat').src=ICON.icStat;$('icInv').src=ICON.icBag;$('pmIcCamp').src=ICON.wood;$('icMenu').src=ICON.icMenu;$('pmIcStat').src=ICON.icStat;$('pmIcInv').src=ICON.icBag;$('pmIcMap').src=ICON.icMap;$('pmIcPal').src=ICON.icPal;$('pmIcSnd').src=ICON.sndOn;$('pmIcSave').src=ICON.icSave;$('pmIcExit').src=ICON.icExit;$('icQ').src=ICON.scroll;if(qCollapsed){$('quest').style.display='none';$('qIcon').style.display='flex'}$('icMap').src=ICON.icMap;$('icPal').src=ICON.icPal;$('icStat').src=ICON.icStat;$('icSnd').src=ICON.sndOn;$('icA').src=ICON.fist;$('icB').src=ICON.staff;$('icE').src=ICON.talk;$('icH').src=ICON.herb;$('icOrb').src=ICON.icOrb;
   const t=$('titleArt').getContext('2d');t.imageSmoothingEnabled=false;const h=BUILTIN.hero,b=BUILTIN.bulma;t.drawImage(h.tex,0,2*42,28,42,10,4,28,42);t.save();t.scale(-1,1);t.drawImage(b.tex,0,2*42,28,42,-86,4,28,42);t.restore();t.drawImage(SPX.icOrb,41,20,14,14)}
 initIcons();
 
@@ -1385,7 +1399,7 @@ $('dialog').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagat
 /* ================= STORY ================= */
 const G=()=>N('hero'),BU=()=>N('bulma'),RS=()=>N('roshi'),TT=()=>N('turtle');
 function setS(s){if(s===4&&Q.s<4)pendingMsg.push([[BU(),'Tas tavo tiltas per upę – visas sulūžęs! Kaip tu juo vaikščioji?'],[G(),'Šokinėju per akmenis! Bet tau gal nepavyktų...'],['Pasakotojas',BU()+' išsitraukia kapsulę su įrankiais ir per kelias minutes sutaiso tiltą. Kelias į rytus – atviras!']]);Q.s=s;applyGates();if(s===4||s===7)buildMapCache();syncBosses();save()}
-function questText(){
+function questText(){if(!W1())return questTextW();
   switch(Q.s){
     case 0:return Q.dummies<3?`Rytinė treniruotė: sudaužyk iškamšas ${Q.dummies}/3`:'Rytinė treniruotė: numušk taikinį LAZDA iš toli';
     case 1:return'Pagauk pusryčiams milžinišką žuvį (tvenkinys rytuose)';
@@ -1404,13 +1418,13 @@ function questText(){
     default:return'1 skyrius įveiktas ✔ Tyrinėk laisvai';
   }
 }
-function sideText(){const a=[];
+function sideText(){const a=[];if(!W1())return a;
   if(Q.sq1===1)a.push(['axe','Medkirčio kirvis – tigrų urvas miško rytuose']);
   if(Q.sq1===2)a.push(['axe','Grąžink kirvį medkirčiui']);
   if(Q.sq2===1)a.push(['mush',`Grybai žolininkei ${Math.min(6,Q.got.filter(i=>i[0]==='m').length)}/6`]);
   if(Q.scrolls>0&&Q.scrolls<3)a.push(['scroll',`Senelio užrašai ${Q.scrolls}/3`]);
   return a}
-function objective(){
+function objective(){if(!W1())return objectiveW();
   const nearestE=pred=>{let b=null,bd=1e9;for(const e of enemies)if(e.alive&&pred(e)){const d=dist(P,e);if(d<bd){bd=d;b=e}}return b};
   switch(Q.s){
     case 0:return Q.dummies<3?nearestE(e=>e.type==='dummy'):boss('post')||null;
@@ -1420,7 +1434,7 @@ function objective(){
     case 9:case 11:return BEACH;case 10:return boss('bear');case 12:return RO;case 13:return nearestE(e=>e.type==='rock');
   }return null}
 
-function storyTriggers(){
+function storyTriggers(){if(!W1()){worldTriggers();return}
   if(dlg)return;if(pendingMsg.length){say(pendingMsg.shift());return}
   if(Q.s===1&&!Q.fishOn&&!Q.fishIntro&&dist(P,SHORE)<110){
     say([
@@ -1487,7 +1501,7 @@ function csDraw(){if(!CS||CS.kind!=='kidnap')return;const c=CS,sz=Math.max(.6,1-
   if(c.grab){ctx.save();ctx.translate(c.x,fy+38);ctx.rotate(Math.sin(time*9)*.18);drawSprite('bulma',0,0,0,1,time*120,false,false);ctx.restore()}
   drawSprite('ptero',c.x,fy,c.fx||-1,0,true,false,false)}
 function startKidnap(cb){CS={kind:'kidnap',t:0,bx:B.x,by:B.y,nx:NESTC.x,ny:NESTC.y,x:B.x+380,y:B.y-300,alt:240,fx:-1,cb};sfx('warnBig');joy=null;btn.A=btn.B=false}
-function storyTriggers2(){
+function storyTriggers2(){if(!W1())return;
   if(dlg)return;
   if(false){}
   else if(Q.s===6&&dist(P,CLEAR)<100&&!CS){
@@ -1613,6 +1627,7 @@ function talkTo(who){
 }
 function interactables(){
   if(inside)return interiorInteractables();
+  if(!W1())return interactablesW();
   const hh=HOUSES[0],L=[{k:'enterHut',type:'enter',hw:20,x:(hh.x0+hh.w/2)*TS,y:(hh.y0+hh.h)*TS-6}];if(!villagersHome())L.push({k:'woodcutter',type:'talk',x:WC.x,y:WC.y},{k:'herbalist',type:'talk',x:HB.x,y:HB.y});
   for(const h of HOUSES)if(h.kind!=='hut')L.push({k:'enterCot',type:'enter',h,hw:20,x:(h.x0+h.w/2)*TS,y:(h.y0+h.h)*TS-6});
   if(bulmaVisible())L.push({k:'bulma',type:'talk',x:B.x,y:B.y});
@@ -1628,8 +1643,8 @@ function interactables(){
 function nearest(){const fl=Math.hypot(P.fx,P.fy)||1,fx=P.fx/fl,fy=P.fy/fl;let best=null,bs=1e9;
   for(const o of interactables()){const hw=o.hw||0,px=Math.max(o.x-hw,Math.min(o.x+hw,P.x)),py=o.y0!=null?Math.max(o.y0,Math.min(o.y,P.y)):o.y,dx=px-P.x,dy=py-P.y,d=Math.hypot(dx,dy);
     if(d>52)continue;const dot=d<12?1:(dx*fx+dy*fy)/d;if(dot<(o.type==='enter'?.3:.5))continue;const sc=d*(1.6-dot);if(sc<bs){bs=sc;best=o}}return best}
-function interact(){const o=nearest();if(!o){addFloat(P.x,P.y-26,'Nieko šalia','#c0cbdc');return}if(o.k==='item'){items=items.filter(i=>i!==o.it);pickup(o.it);P.atkType='punch';P.atkDur=P.atkT=.25;return}if(o.k==='pcamp'){let near=null;for(const e of enemies)if(e.alive&&e.ai!=='none'&&(!e.cond||e.cond())&&dist(e,P)<260){near=e;break}if(near)say([[G(),'Netoliese slankioja priešai... Taip užmigti pavojinga.']]);else say([[G(),isNight()?'Jaukus laužas. Pamiegosiu iki ryto.':'Prisėsiu prie laužo ir pailsėsiu iki kito ryto.']],()=>sleepNow(()=>say([['Pasakotojas','Išaušo rytas. Laužas užgeso – jėgos atgautos.']],()=>{Q.pcamp=null;save()})))}else if(o.k==='enterCot'){const ik={cottageW:'cotW',cottageH:'cotH',cottageR:'cotR',cottageB:'cotB'}[o.h.kind];if(isNight())say([['Pasakotojas','Durys užrakintos. Viduje kažkas garsiai knarkia.'],[G(),'Visi miega... Užeisiu ryte.']]);else enterInterior(ik)}else if(o.k==='enterHut')enterInterior('hut');else if(o.k==='enterDome')enterInterior('dome');else if(o.k==='exit')exitInterior();else if(o.k==='obj')useObj(o.o);else if(o.k==='npc'){const n=o.n;n.tg=null;n.wt=2.5;n.mv=false;n.fx=(P.x-n.x)/(dist(P,n)||1);n.fy=(P.y-n.y)/(dist(P,n)||1);say([[n.name,n.lines[n.li++%n.lines.length]]])}else talkTo(o.k)}
-const bulmaVisible=()=>Q.s>=3&&Q.s!==7&&!(CS&&CS.grab);
+function interact(){const o=nearest();if(!o){addFloat(P.x,P.y-26,'Nieko šalia','#c0cbdc');return}if(o.k==='item'){items=items.filter(i=>i!==o.it);pickup(o.it);P.atkType='punch';P.atkDur=P.atkT=.25;return}if(o.k==='pcamp'){let near=null;for(const e of enemies)if(e.alive&&e.ai!=='none'&&(!e.cond||e.cond())&&dist(e,P)<260){near=e;break}if(near)say([[G(),'Netoliese slankioja priešai... Taip užmigti pavojinga.']]);else say([[G(),isNight()?'Jaukus laužas. Pamiegosiu iki ryto.':'Prisėsiu prie laužo ir pailsėsiu iki kito ryto.']],()=>sleepNow(()=>say([['Pasakotojas','Išaušo rytas. Laužas užgeso – jėgos atgautos.']],()=>{Q.pcamp=null;save()})))}else if(o.k==='enterCot'){const ik={cottageW:'cotW',cottageH:'cotH',cottageR:'cotR',cottageB:'cotB'}[o.h.kind];if(isNight())say([['Pasakotojas','Durys užrakintos. Viduje kažkas garsiai knarkia.'],[G(),'Visi miega... Užeisiu ryte.']]);else enterInterior(ik)}else if(o.k==='enterHut')enterInterior('hut');else if(o.k==='enterDome')enterInterior('dome');else if(o.k==='exit')exitInterior();else if(o.k==='obj')useObj(o.o);else if(o.k==='npc'){const n=o.n;n.tg=null;n.wt=2.5;n.mv=false;n.fx=(P.x-n.x)/(dist(P,n)||1);n.fy=(P.y-n.y)/(dist(P,n)||1);if(!W1()&&worldTalk(n))return;say([[n.name,n.lines[n.li++%n.lines.length]]])}else talkTo(o.k)}
+const bulmaVisible=()=>W1()&&Q.s>=3&&Q.s!==7&&!(CS&&CS.grab);
 let CS=null;
 const bulmaFollows=()=>[3,4,6,8,9,10,11,12].includes(Q.s);
 function bulmaPost(){if(Q.s===5)return{x:CAMP.x-40,y:CAMP.y+6};if(Q.s>=13)return{x:BEACH.x-60,y:BEACH.y};return null}
@@ -1638,7 +1653,7 @@ function bulmaPost(){if(Q.s===5)return{x:CAMP.x-40,y:CAMP.y+6};if(Q.s>=13)return
 let ynOpen=false,ynCb=null;function askYN(t,x,yes,no){ynOpen=true;joy=null;btn.A=btn.B=false;for(const k in keys)keys[k]=false;$('ynT').textContent=t;$('ynX').textContent=x;$('ynOv').style.display='flex';ynCb=[yes,no]}
 function ynDone(i){ynOpen=false;$('ynOv').style.display='none';const f=ynCb&&ynCb[i];ynCb=null;if(f)f()}
 let invOpen=false,menuOpen=false,sprOpen=false,mapOpen=false,sndOpen=false;
-const STATS=[['str','Jėga (smūgiai)'],['def','Gynyba'],['kip','Ki galia (lazda)'],['kir','Ki atsistatymas'],['crt','Kritinis smūgis'],['agi','Greitis'],['lck','Sėkmė (grobis)'],['vit','Ištvermė (+10 HP)']];
+const STATS=[['str','Jėga (smūgiai)'],['def','Gynyba'],['kip','Ki galia (lazda)'],['kir','Ki atsistatymas'],['crt','Kritinis smūgis'],['agi','Greitis'],['lck','Sėkmė (grobis)'],['vit','Ištvermė (+6 HP)']];
 let menuTab='stats';
 let invTab='use';
 function renderInv(){
@@ -1678,10 +1693,10 @@ document.querySelectorAll('#menu .tabs button').forEach(b=>b.onclick=()=>{menuTa
 function renderMenu(){
   if(menuTab==='tech')return renderTech();
   let h=`<div class="row"><span>Laisvi taškai</span><b>${P.pts}</b></div>`;
-  for(const[k,n]of STATS){const v=k==='vit'?P.maxHp+' HP':k==='kir'?(.6+st('kir')*.4).toFixed(1)+'/s':k==='crt'?Math.round(critCh()*100)+'%':k==='agi'?topSpeed()+' px/s, smūgiai +'+Math.round((1/aspd()-1)*100)+'%':k==='def'?st('def')+' (−'+Math.round(defRed()*100)+'% žalos)':k==='lck'?st('lck')+' (grobis '+Math.round(dropCh()*100)+'%, XP +0–'+Math.round(luckXp()*100)+'%)':st(k);const gb=k==='vit'?gearB('hp'):gearB(k);h+=`<div class="row"><span>${n}: <b>${v}</b>${gb?` <span style="color:#63c74d">(+${gb} ekip.)</span>`:''}</span><button data-k="${k}" ${P.pts?'':'disabled'}>+1</button></div>`}
+  for(const[k,n]of STATS){const v=k==='vit'?P.maxHp+' HP':k==='kir'?(.6+st('kir')*.2).toFixed(1)+'/s':k==='crt'?Math.round(critCh()*100)+'%':k==='agi'?topSpeed()+' px/s, smūgiai +'+Math.round((1/aspd()-1)*100)+'%':k==='str'?st('str')+' (smūgis ~'+Math.round(strDmg()+1)+')':k==='def'?st('def')+' (−'+Math.round(defRed()*100)+'% žalos)':k==='lck'?st('lck')+' (grobis '+Math.round(dropCh()*100)+'%, XP +0–'+Math.round(luckXp()*100)+'%)':st(k);const gb=k==='vit'?gearB('hp'):gearB(k);h+=`<div class="row"><span>${n}: <b>${v}</b>${gb?` <span style="color:#63c74d">(+${gb} ekip.)</span>`:''}</span><button data-k="${k}" ${P.pts?'':'disabled'}>+1</button></div>`}
   h+=`<div class="row"><span>XP</span><span>${Math.floor(P.xp)}/${need(P.lvl)}</span></div>`;
   $('statRows').innerHTML=h;
-  $('statRows').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(!P.pts)return;P.pts--;const k=b.dataset.k;if(k==='vit'){P.maxHp+=10;P.hp+=10}else P[k]=(P[k]||0)+1;sfx('stat');save();renderMenu()});
+  $('statRows').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(!P.pts)return;P.pts--;const k=b.dataset.k;if(k==='vit'){P.maxHp+=6;P.hp+=6}else P[k]=(P[k]||0)+1;sfx('stat');save();renderMenu()});
 }
 function renderTech(){
   let h=`<div class="row"><span>Laisvi taškai</span><b>${P.pts||0}</b></div><div class="small">Taškai bendri su statais: +5 kas lygį. Super technikoms laikyk mygtuką, kol užsidegs žiedas, ir atleisk.</div>`;let grp='';
@@ -1719,10 +1734,11 @@ $('closeMenu').onclick=()=>{menuOpen=false;$('menu').style.display='none'};
 function openInv(){if(!P)return;invOpen=true;renderInv();$('invOv').style.display='flex'}
 function closeInv(){invOpen=false;$('invOv').style.display='none'}
 document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('button');if(!b||b.disabled||b.dataset.k||b.dataset.sk||b.dataset.fist)return;try{auInit()}catch(_){}sfx('click')},true);
+$('worldClose').onclick=closeWorlds;$('pmTravel').onclick=()=>{closePause();openWorlds()};$('endKinto').onclick=()=>{$('endOv').style.display='none';openWorlds()};bindBtn('bK',fireKame,()=>{});
 $('ynYes').onclick=()=>ynDone(0);$('ynNo').onclick=()=>ynDone(1);
 $('invBtn').onclick=openInv;$('closeInv').onclick=closeInv;
 let mapSeen='';function mapLoop(){if(!mapOpen)return;renderMinimap();requestAnimationFrame(mapLoop)}
-$('mapBtn').onclick=()=>{if(!P)return;mapOpen=true;mapSeen=questText();$('mapNew').style.display='none';$('mapOv').style.display='flex';mapLoop()};
+$('mapBtn').onclick=()=>{if(!P)return;$('mapOv').querySelector('h2').textContent=curW().name;mapOpen=true;mapSeen=questText();$('mapNew').style.display='none';$('mapOv').style.display='flex';mapLoop()};
 $('closeMap').onclick=()=>{mapOpen=false;$('mapOv').style.display='none'};
 $('sprBtn').onclick=()=>{sprOpen=true;renderSprMenu();$('sprOv').style.display='flex'};
 $('closeSpr').onclick=()=>{sprOpen=false;$('sprOv').style.display='none'};
@@ -1743,7 +1759,7 @@ $('pmSave').onclick=()=>{save();$('pmInfo').textContent='Žaidimas išsaugotas �
 $('pmTitle').onclick=()=>{save();closePause();inside=null;$('contBtn').style.display='block';$('title').style.display='flex';document.body.classList.add('onTitle');saveInfo();$('dialog').style.display='none';dlg=null};
 addEventListener('keydown',e=>{if(e.key==='Escape'){if(pauseOpen)closePause();else if(invOpen)closeInv();else if(!dlg&&!menuOpen&&!mapOpen&&!sprOpen&&!sndOpen)openPause()}});
 $('endClose').onclick=()=>{$('endOv').style.display='none'};
-const paused=()=>!P||CS||dlg||ynOpen||invOpen||menuOpen||sprOpen||mapOpen||sndOpen||(typeof pauseOpen!=='undefined'&&pauseOpen)||$('title').style.display!=='none'||$('endOv').style.display==='flex';
+const paused=()=>!P||CS||worldsOpen||$('travelOv').style.display==='flex'||dlg||ynOpen||invOpen||menuOpen||sprOpen||mapOpen||sndOpen||(typeof pauseOpen!=='undefined'&&pauseOpen)||$('title').style.display!=='none'||$('endOv').style.display==='flex';
 
 /* ================= COMBAT ================= */
 function addFloat(x,y,txt,col){floats.push({x,y,txt,col,t:1.1})}
@@ -1758,9 +1774,9 @@ function finishDeath(){
   for(const e of enemies)if(e.boss){e.eng=false;if(e.alive){bossResetState(e);e.hp=e.maxHp;e.x=e.sx;e.y=e.sy;e.dying=0;e.leashT=0;if(e.type==='fish'){e.mode=null;e.sub=true;e.x=T(POND.x);e.y=T(POND.y)}}}
   if(Q.s===1){Q.fishOn=false;syncBosses()}
   if(Q.s===10||Q.s===9||Q.s===11){TU.x=Q.s===9?TUS.x:TUB.x;TU.y=Q.s===9?TUS.y:TUB.y;TU.hp=TU.maxHp}
-  const nightQ=Q.s===5;
+  const nightQ=W1()&&Q.s===5;
   if(nightQ){if(!isNight())Q.tod=21;Q.night=true}else{if(tod()>6)Q.dayN=(Q.dayN||0)+1;Q.tod=6;Q.night=false}
-  const bd=nightQ?{x:Q.fire?CAMP.x:HAMLET.x,y:(Q.fire?CAMP.y:HAMLET.y)+40,camp:1}:Q.bed;
+  const bd=nightQ?{x:Q.fire?CAMP.x:HAMLET.x,y:(Q.fire?CAMP.y:HAMLET.y)+40,camp:1}:(Q.bed&&(Q.bed.w||1)===WID?Q.bed:null);
   if(bd&&bd.in&&INTERIORS[bd.in]){inside=bd.in;INS_RET={x:bd.rx,y:bd.ry};P.x=bd.x;P.y=bd.y;B.inside=false}
   else if(bd){P.x=bd.x;P.y=bd.y}else{P.x=SPAWN.x;P.y=SPAWN.y}
   P.fx=0;P.fy=1;if(!inside)worldRespawn(260);save();
@@ -1773,15 +1789,17 @@ function damageEnemy(e,dmg,nx,ny,src){
   let crit=false;if((src==='punch'||src==='pole')&&Math.random()<critCh()+(src==='punch'&&fistHas(65)?.05:0)){dmg=Math.round(dmg*1.8);crit=true}
   if(e.dizzy>0)dmg=Math.round(dmg*1.6);
   dmg=Math.max(1,dmg-(e.def||0));if(crit){floats.push({x:e.x,y:e.y-e.r-26,txt:'KRITINIS!',col:'#feae34',t:.8,big:true});shake=Math.max(shake,.12);sfx('crit');puff(e.x,e.y-20,10,['#feae34','#fff'],220,.3,0,2)}
-  if(e.type==='fish'){e.hits=(e.hits||0)+1;puff(e.x,e.y,8,['#d8f0ff','#8ad8ff'],140,.4,300,2,60);if(e.hits>=4&&e.mode==='up'){e.mode='dive';e.st=.35;sfx('splash')}}e.hp-=dmg;e.hurt=.12;puff(e.x,e.y-20,6,['#f4f4f4','#feae34','#ffe08a'],170,.25,0,1.5);sfx(e.type==='drytree'?'chop':'hit');if(!e.boss&&e.ai!=='none'){if(e.armorT>0){moveEnt(e,nx*2,ny*2,e.r*.8)}else{e.hitsW=(time-(e.lastHitT||-9)<1.1)?(e.hitsW||0)+1:1;e.lastHitT=time;const kb=src==='punch'?7:14;moveEnt(e,nx*kb,ny*kb,e.r*.8);if(e.hitsW>=(src==='punch'&&fistHas(80)?3:2)){e.armorT=1.7;e.hitsW=0;e.stag=0;if(e.ai==='chase'){e.as='wind';e.at=.16}else e.dashT=0;floats.push({x:e.x,y:e.y-40,txt:'!',col:'#e43b44',t:.6,big:true})}else{e.stag=.22;if(e.as!=='lunge')e.as=null}}}addFloat(e.x,e.y-e.r-6,String(dmg),(e.def&&dmg<=Math.max(2,e.maxHp*.01))?'#8b9bb4':'#fff');if(e.boss&&dmg<=Math.max(2,e.maxHp*.01)&&time-(e.weakT||-9)>3){e.weakT=time;addFloat(P.x,P.y-56,'Per silpnas! Kelk lygį ir stiprink status','#e43b44')}
+  if(e.type==='fish'){e.hits=(e.hits||0)+1;puff(e.x,e.y,8,['#d8f0ff','#8ad8ff'],140,.4,300,2,60);if(e.hits>=4&&e.mode==='up'){e.mode='dive';e.st=.35;sfx('splash')}}e.hp-=dmg;e.hurt=.12;if(src==='punch'||src==='pole'){if(gearUni('vamp'))P.hp=Math.min(P.maxHp,P.hp+dmg*.04);if(gearUni('kihit'))P.ki=Math.min(P.maxKi,P.ki+1.5)}puff(e.x,e.y-20,6,['#f4f4f4','#feae34','#ffe08a'],170,.25,0,1.5);sfx(e.type==='drytree'?'chop':'hit');if(!e.boss&&e.ai!=='none'){if(e.armorT>0){moveEnt(e,nx*2,ny*2,e.r*.8)}else{e.hitsW=(time-(e.lastHitT||-9)<1.1)?(e.hitsW||0)+1:1;e.lastHitT=time;const kb=src==='punch'?7:14;moveEnt(e,nx*kb,ny*kb,e.r*.8);if(e.hitsW>=(src==='punch'&&fistHas(80)?3:2)){e.armorT=1.7;e.hitsW=0;e.stag=0;if(e.ai==='chase'){e.as='wind';e.at=.16}else e.dashT=0;floats.push({x:e.x,y:e.y-40,txt:'!',col:'#e43b44',t:.6,big:true})}else{e.stag=.22;if(e.as!=='lunge')e.as=null}}}addFloat(e.x,e.y-e.r-6,String(dmg),(e.def&&dmg<=Math.max(2,e.maxHp*.01))?'#8b9bb4':'#fff');if(e.boss&&dmg<=Math.max(2,e.maxHp*.01)&&time-(e.weakT||-9)>3){e.weakT=time;addFloat(P.x,P.y-56,'Per silpnas! Kelk lygį ir stiprink status','#e43b44')}
   if(e.hp>0)return;
   if(e.boss){e.hp=0;e.dying=1.4;shake=.35;sfx('die');shots=shots.filter(x=>!x.enemy);return}
   finishKill(e)}
 function finishKill(e){
   if(e.boss){Q.bw=Q.bw||{};Q.bw[e.type]=true;e.eng=false}
-  e.alive=false;e.resp=e.type==='tigerking'?600:150;if(e.ai!=='none'||e.type==='rock'){sfx('die');puff(e.x,e.y-10,12,['#c0cbdc','#8b9bb4','#f4f4f4'],70,.6,-30,3)}if(e.type==='drytree')puff(e.x,e.y-20,10,['#8a5a2a','#a08040','#6a4a30'],120,.5,300,2);if(e.xp){const xv=e.xp*(1+Math.random()*luckXp()),n=Math.min(7,Math.max(1,Math.ceil(xv/12))),o0=reachSpot(e.x,e.y);for(let i=0;i<n;i++){const a=Math.random()*6.28,sp=60+Math.random()*80;orbs.push({x:o0.x,y:o0.y,ox:o0.x,oy:o0.y,life:90,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp*.6,z:0,vz:120+Math.random()*80,t:0,val:xv/n,ph:Math.random()*4})}}
+  if(!W1()){if(e.boss)wq().bd[e.type]=true;else{const s=wstep();if(s&&s.t==='kill'&&s.e===e.type)wq().cnt++}}
+  e.alive=false;e.resp=e.type==='tigerking'?600:150;if(e.ai!=='none'||e.type==='rock'){sfx('die');puff(e.x,e.y-10,12,['#c0cbdc','#8b9bb4','#f4f4f4'],70,.6,-30,3)}if(e.type==='drytree')puff(e.x,e.y-20,10,['#8a5a2a','#a08040','#6a4a30'],120,.5,300,2);if(e.xp){const xv=e.xp*(1+Math.random()*luckXp())*(e.lv&&P.lvl-e.lv>=10?.25:e.lv&&P.lvl-e.lv>=5?.5:1),n=Math.min(7,Math.max(1,Math.ceil(xv/12))),o0=reachSpot(e.x,e.y);for(let i=0;i<n;i++){const a=Math.random()*6.28,sp=60+Math.random()*80;orbs.push({x:o0.x,y:o0.y,ox:o0.x,oy:o0.y,life:90,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp*.6,z:0,vz:120+Math.random()*80,t:0,val:xv/n,ph:Math.random()*4})}}
   if(e.ai!=='none'&&!e.boss){Q.kills++;if(Math.random()<dropCh()){const sp=reachSpot(e.x,e.y);items.push({kind:'herb',id:'h'+Math.random(),x:sp.x,y:sp.y})}else{const gid=Object.keys(GEAR).find(k=>GEAR[k].src===e.type);if(gid&&Math.random()<gearCh())giveGear(gid,e.x+ri(-10,10),e.y)}}
   if(e.boss){const gid=Object.keys(GEAR).find(k=>GEAR[k].src===e.type);if(gid)giveGear(gid,e.x+20,e.y+10)}
+  if(e.lv&&e.ai!=='none'){if(e.boss)dropGear(genGear(e.lv,rollRar(true)),e.x+24,e.y+12);else if(!Object.keys(GEAR).some(k=>GEAR[k].src===e.type)&&Math.random()<gearCh()*1.3)dropGear(genGear(e.lv,rollRar(false)),e.x,e.y)}
   if(e.type==='drytree'){(Q.chopped=Q.chopped||[]).push(e.id);if(Q.s===5&&Q.wood<5){Q.wood++;flyers.push({k:'wood',x:e.x,y:e.y-30,t:0});addFloat(e.x,e.y-50,`Malkos ${Q.wood}/5`,'#feae34')}save()}
   if(e.type==='dummy'){e.resp=6;if(Q.s===0&&Q.dummies<3){Q.dummies++;if(Q.dummies===3)say([['Patarimas','Puiku! Dabar taikinys ant stulpo šiaurėje. Atsistok toliau ir spausk LAZDA – lazda pailgėja ir pasiekia iš toli.']])}}
   if(e.type==='post'){e.resp=6;if(Q.s===0&&Q.dummies>=3)say([[G(),'Ūha! Dabar išalkau... Tvenkinyje rytuose gyvena didžiulė žuvis. Pagausiu ją pusryčiams!']],()=>setS(1))}
@@ -1792,7 +1810,7 @@ function finishKill(e){
     say([[BU(),'Uf... Ačiū, '+G()+'. Tu keistas, bet tikrai stiprus.'],[G(),'Tu tokia lengva! Ar visi miesto žmonės tokie silpni?'],[BU(),'Ką?! ...Gerai, eime. Radaras vėl rodo Gilųjį mišką.']],()=>setS(8))}
   if(e.type==='bear')say([[G(),'Akmuo... žirklės... POPIERIUS!'],[N('bear'),'Ai ai ai... Gerai, gerai, pasiduodu! Daugiau neliesiu vėžlių!'],[TT(),'Ačiū, jaunuoli! Jau netoli jūra.']],()=>setS(11));
 }
-function kiRate(){const r=.6+st('kir')*.4;return P.kiT>0||time-(P.lastKiUse||-9)<1.5?r*.3:r}
+function kiRate(){const r=.6+st('kir')*.2;return P.kiT>0||time-(P.lastKiUse||-9)<1.5?r*.3:r}
 const SLOTS_G=[['rankos','Rankos'],['kunas','Kūnas'],['kojos','Kojos'],['amul','Talismanas']];
 const GEAR={
   tvarsciai:{n:'Kovos tvarsčiai',slot:'rankos',ic:'gWrap',b:{str:2},src:'wolf'},
@@ -1818,12 +1836,13 @@ function reachSpot(x,y){if(inside)return{x,y};const sx=Math.floor(P.x/TS),sy=Mat
   while(q.length){const[cx,cy,d]=q.shift();const dd=Math.hypot(cx+.5-tx,cy+.5-ty);if(dd<bd){bd=dd;best=[cx,cy]}if(d>45)continue;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=cx+dx,ny=cy+dy,k=nx+','+ny;if(seen.has(k)||nx<0||ny<0||nx>=MW||ny>=MH)continue;seen.add(k);if(SOLID.has(map[ny][nx])||gateBlock(T(nx),T(ny)))continue;q.push([nx,ny,d+1])}}
   if(bd<.75&&!SOLID.has(map[Math.floor(ty)][Math.floor(tx)]))return{x,y};return{x:T(best[0]),y:T(best[1])}}
 function giveGear(id,x,y){if(ownsGear(id)||items.some(i=>i.gid===id))return;const sp=reachSpot(x,y);items.push({kind:'gear',id:'g_'+id,gid:id,x:sp.x,y:sp.y})}
-function luckXp(){return Math.min(.75,st('lck')*.05)}
+function luckXp(){return Math.min(.75,st('lck')*.025)}
 function gearCh(){return Math.min(.08,.015+st('lck')*.004)}
 function aspd(){return 1/(1+Math.min(.4,st('agi')*.025))}
-function defRed(){return Math.min(.6,st('def')*.04)}
-function dropCh(){return Math.min(.3,.07+st('lck')*.02)}
-function topSpeed(){return Math.min(175,100+st('agi')*6+(Q.s>=14?30:0))}
+function defRed(){return Math.min(.6,st('def')*.015)}
+function strDmg(){return 3+st('str')*.6}
+function dropCh(){return Math.min(.3,.07+st('lck')*.01)}
+function topSpeed(){return Math.min(175,100+st('agi')*3+(Q.s>=14?30:0))}
 function tod(){return Q.tod==null?7:Q.tod}
 function isNight(){const t=tod();return t>=20.5||t<5.5}
 function phaseName(){const t=tod();return t<5.5?'Naktis':t<8?'Rytas':t<17.5?'Diena':t<20.5?'Vakaras':'Naktis'}
@@ -1831,11 +1850,11 @@ function darkness(){const t=tod();if(t>=20.5||t<5.5)return .8;if(t>=19.5)return 
 function clockStr(){const t=tod(),h=Math.floor(t),m=Math.floor((t-h)*6)*10;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')}
 function advTime(dt){const o=tod();Q.tod=(o+dt/25)%24;if(Q.s===5&&Q.tod>=4.4&&Q.tod<20.5)Q.tod=4.4;if(Q.tod<o)Q.dayN=(Q.dayN||0)+1}
 function daily(k){Q.dly=Q.dly||{};if(Q.dly[k]===(Q.dayN||0))return false;Q.dly[k]=Q.dayN||0;return true}
-function sleepNow(cb){if(P.sleep)return;Q.bed=inside?{in:inside,x:Math.round(P.x),y:Math.round(P.y),rx:Math.round(INS_RET.x),ry:Math.round(INS_RET.y)}:{x:Math.round(P.x),y:Math.round(P.y+8)};P.sleep={t:3.2,cb,done:false};joy=null;btn.A=btn.B=false;sfx('heal')}
+function sleepNow(cb){if(P.sleep)return;Q.bed=inside?{w:WID,in:inside,x:Math.round(P.x),y:Math.round(P.y),rx:Math.round(INS_RET.x),ry:Math.round(INS_RET.y)}:{w:WID,x:Math.round(P.x),y:Math.round(P.y+8)};P.sleep={t:3.2,cb,done:false};joy=null;btn.A=btn.B=false;sfx('heal')}
 function sunK(){const t=tod();
   if(t>=6&&t<=19.5){const u=(t-12.75)/6.75;let a=.34;if(t<7)a*= (t-6)/1+.25;if(t>18.5)a*=(19.5-t)/1+.25;return{kx:u*1.15+.25,ky:-(.26+.32*u*u),a:Math.min(.34,a)}}
   let a=.16;if(t>19.5&&t<20.5)a*=(t-19.5);if(t>=5&&t<6)a*=(6-t);return{kx:-.3,ky:-.3,a}}
-function critCh(){return Math.min(.2,.01+st('crt')*.01+gearB('crtp')*.01)}
+function critCh(){return Math.min(.2,.01+st('crt')*.005+gearB('crtp')*.01)}
 function gainXp(n){n=n*(1+gearB('xp')/100);P.xp+=n;while(P.xp>=need(P.lvl)){P.xp-=need(P.lvl);P.lvl++;P.pts+=5;P.maxHp+=8;P.maxKi+=4;P.hp=Math.min(P.maxHp,P.hp+Math.round(P.maxHp*.3));P.ki=Math.min(P.maxKi,P.ki+Math.round(P.maxKi*.3));flash=1.6;sfx('level');puff(P.x,P.y-20,24,['#feae34','#ffe08a','#fff'],140,1,-60,2)}save()}
 const JK=[['AKMUO!',1,'punch'],['ŽIRKLĖS!',1.4,'kick'],['POPIERIUS!',2.4,'palm']];
 let shake=0;
@@ -1861,7 +1880,7 @@ function punch(){
   P.atkType=anim;P.atkDur=P.atkT=(fin?.42:anim==='kick'?.36:two?.23:.3)*aspd();sfx(fin?'jk':anim==='kick'?'pole':'swing');let hitAny=false;
   const reach=anim==='kick'?36:fin?(fistHas(50)?70:38):30;
   for(const e of enemies){if(!e.alive||(e.cond&&!e.cond()))continue;const dx=e.x-P.x,dy=e.y-P.y,d=Math.hypot(dx,dy)||1;
-    if(d<e.r+reach){const dot=(dx*P.fx+dy*P.fy)/d;if(dot>.2||d<e.r+10){hitAny=true;damageEnemy(e,Math.round((st('str')+ri(0,2))*mul)+(fistHas(25)?Math.round((e.def||0)*.3):0),dx/d,dy/d,'punch');if(fin&&fistHas(100)&&e.boss&&e.alive)e.dizzy=Math.max(e.dizzy||0,1);if(fin&&e.alive&&!e.boss&&e.ai!=='none')moveEnt(e,dx/d*36,dy/d*36,e.r*.8)}}}
+    if(d<e.r+reach){const dot=(dx*P.fx+dy*P.fy)/d;if(dot>.2||d<e.r+10){hitAny=true;damageEnemy(e,Math.round((strDmg()+ri(0,2))*mul)+(fistHas(25)?Math.round((e.def||0)*.3):0),dx/d,dy/d,'punch');if(fin&&fistHas(100)&&e.boss&&e.alive)e.dizzy=Math.max(e.dizzy||0,1);if(fin&&e.alive&&!e.boss&&e.ai!=='none')moveEnt(e,dx/d*36,dy/d*36,e.r*.8)}}}
   for(const n of NPCS){if(!npcVisible(n))continue;const dx=n.x-P.x,dy=n.y-P.y,d=Math.hypot(dx,dy)||1;if(d<npcRad(n)+reach&&(dx*P.fx+dy*P.fy)/d>.2)npcHit(n)}
   if(anim==='kick')parts.push({arc:true,x:P.x,y:P.y-14,a:Math.atan2(P.fy,P.fx),t:.18,l:.18});
   if(fin){parts.push({ring:true,x:P.x+P.fx*26,y:P.y-12+P.fy*20,t:.3,l:.3});if(fistHas(50))parts.push({ring:true,x:P.x+P.fx*55,y:P.y-12+P.fy*40,t:.35,l:.35,R:30});P.combo=0;if(hitAny)shake=.18}
@@ -1891,7 +1910,7 @@ function spinAttack(big){
 function spinTick(){
   const S=P.spin,k=1-S.t/S.l,want=Math.min(S.hits,Math.floor(k*S.hits+(S.hits===1?.55:.35)));
   while(S.done<want){S.done++;const lv=P.skSpin||1;
-    const dmg=()=>{const b=(st('str')*.7+st('kip')*.5+ri(0,2))*staffMul();return Math.round(S.big?b*(1.3+.25*(lv-1)):b)};
+    const dmg=()=>{const b=(strDmg()*.7+st('kip')*.4+ri(0,2))*staffMul();return Math.round(S.big?b*(1.3+.25*(lv-1)):b)};
     const inArc=(dx,dy)=>{if(S.big)return true;let da=Math.atan2(dy,dx)-S.a0;while(da>Math.PI)da-=2*Math.PI;while(da<-Math.PI)da+=2*Math.PI;return Math.abs(da)<=S.arc/2+.15};
     for(const e of enemies){if(!e.alive||(e.cond&&!e.cond()))continue;const dx=e.x-P.x,dy=e.y-P.y,d=Math.hypot(dx,dy)||1;
       if(d<S.R+e.r&&(d<e.r+10||inArc(dx,dy))){damageEnemy(e,dmg(),dx/d,dy/d,'pole');if(e.alive&&!e.boss&&e.ai!=='none')moveEnt(e,dx/d*(S.big?30:14),dy/d*(S.big?30:14),e.r*.8)}}
@@ -1905,18 +1924,17 @@ function superPunch(){
   for(let i=0;i<6;i++)moveEnt(P,P.fx*8,P.fy*8,9);
   sfx('jk');shake=.25;const reach=46;let hit=false;
   for(const e of enemies){if(!e.alive||(e.cond&&!e.cond()))continue;const dx=e.x-P.x,dy=e.y-P.y,d=Math.hypot(dx,dy)||1;
-    if(d<e.r+reach&&((dx*P.fx+dy*P.fy)/d>-.1||d<e.r+14)){hit=true;damageEnemy(e,Math.round((st('str')+ri(1,3))*(3+.8*(lv-1))),dx/d,dy/d,'punch');if(e.alive&&!e.boss&&e.ai!=='none')moveEnt(e,dx/d*70,dy/d*70,e.r*.8);if(e.boss&&e.alive&&lv>=3)e.dizzy=Math.max(e.dizzy||0,.8)}}
+    if(d<e.r+reach&&((dx*P.fx+dy*P.fy)/d>-.1||d<e.r+14)){hit=true;damageEnemy(e,Math.round((strDmg()+ri(1,3))*(3+.8*(lv-1))),dx/d,dy/d,'punch');if(e.alive&&!e.boss&&e.ai!=='none')moveEnt(e,dx/d*70,dy/d*70,e.r*.8);if(e.boss&&e.alive&&lv>=3)e.dizzy=Math.max(e.dizzy||0,.8)}}
   for(const n of NPCS){if(!npcVisible(n))continue;const dx=n.x-P.x,dy=n.y-P.y,d=Math.hypot(dx,dy)||1;if(d<npcRad(n)+reach&&(dx*P.fx+dy*P.fy)/d>0)npcHit(n)}
   parts.push({ring:true,x:P.x+P.fx*24,y:P.y-12+P.fy*18,t:.4,l:.4,R:60});puff(P.x+P.fx*24,P.y-10+P.fy*18,14,['#fff','#feae34','#ffe08a'],160,.5,0,2);
 }
 function special(){
-  if(Q.kame){if(P.kiT>0||inside)return;if(P.ki<15){addFloat(P.x,P.y-26,'Trūksta ki','#7cc8ff');P.kiT=.4;return}P.ki-=15;P.kiT=.5;sfx('kame');shots.push({x:P.x+P.fx*14,y:P.y+P.fy*14,vx:P.fx*340,vy:P.fy*340,t:1.3,enemy:false,dmg:st('kip')*4+ri(2,6),r:10});return}
   spinAttack(false);
 }
 function pressA(){if(dlg){advDlg();return}if(paused())return;btn.A=true;P.chA=0;punch()}
 function releaseA(){if(!btn.A)return;btn.A=false;if(P&&P.chA>=CHARGE&&P.skPunch>0&&!paused())superPunch();if(P)P.chA=0}
-function pressB(){if(paused())return;btn.B=true;P.chB=0;if(Q.kame){special();return}}
-function releaseB(){if(!btn.B)return;btn.B=false;if(!P||paused()){if(P)P.chB=0;return}if(!Q.kame){if(P.chB>=CHARGE&&P.skSpin>0)spinAttack(true);else spinAttack(false)}P.chB=0}
+function pressB(){if(paused())return;btn.B=true;P.chB=0}
+function releaseB(){if(!btn.B)return;btn.B=false;if(!P||paused()){if(P)P.chB=0;return}if(P.chB>=CHARGE&&P.skSpin>0)spinAttack(true);else spinAttack(false);P.chB=0}
 function campBlock(){
   if(inside)return'Viduje laužo nekursi.';
   if(Q.s===5&&!Q.fire)return'Šiąnakt Bulma laukia stovykloje – laužą reikia kurti ten.';
@@ -1933,7 +1951,7 @@ function useHerb(){if(Q.herbs<=0){addFloat(P.x,P.y-26,'Nėra žolelių','#ccc');
 
 /* ================= INPUT ================= */
 const keys={};let joy=null;const btn={A:false,B:false};
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;if(dlg&&(k===' '||k==='e'||k==='enter'||k==='j')){advDlg();return}if(paused())return;if(e.repeat)return;if(k==='j'){pressA();return}if(k==='k'){pressB();return}if(k==='e')interact();if(k==='h')useHerb();if(k==='f')makeCamp();if(k==='i'){openInv();return}if(k==='c'){$('menuBtn').onclick();return}if(k==='m')$('mapBtn').onclick()});
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;if(dlg&&(k===' '||k==='e'||k==='enter'||k==='j')){advDlg();return}if(paused())return;if(e.repeat)return;if(k==='j'){pressA();return}if(k==='k'){pressB();return}if(k==='e')interact();if(k==='h')useHerb();if(k==='f')makeCamp();if(k==='l')fireKame();if(k==='i'){openInv();return}if(k==='c'){$('menuBtn').onclick();return}if(k==='m')$('mapBtn').onclick()});
 addEventListener('keyup',e=>{const k=e.key.toLowerCase();keys[k]=false;if(k==='j')releaseA();if(k==='k')releaseB()});
 cv.addEventListener('pointerdown',e=>{e.preventDefault();if(dlg){advDlg();return}if(e.clientX<W*.6&&!joy)joy={id:e.pointerId,ox:e.clientX,oy:e.clientY,x:e.clientX,y:e.clientY}});
 cv.addEventListener('pointermove',e=>{if(joy&&e.pointerId===joy.id){joy.x=e.clientX;joy.y=e.clientY}});
@@ -2026,14 +2044,14 @@ function drawBoss(e){
   if(e.bs==='act'&&e.cur&&e.cur.name==='Kardo viesulas'){dir=Math.floor(time*14)%2?1:-1;atk={type:'punch',p:.5};ctx.strokeStyle='rgba(244,244,248,.7)';ctx.lineWidth=4;ctx.beginPath();const a0=time*18;ctx.arc(e.x,e.y-30,52,a0,a0+2.2);ctx.stroke();ctx.beginPath();ctx.arc(e.x,e.y-30,52,a0+3.14,a0+5.3);ctx.stroke()}
   const fl=e.type==='ptero'?16:0,jh=e.jh||0;
   if(jh)shadow(e.x,e.y+12,22*(1-jh/160));if(fl)shadow(e.x,e.y+12,18);
-  drawSprite(e.type,e.x+ox,e.y-fl-jh+oy,dir,ty*(e.type==='bear'?1:0),mv,e.hurt>0,atk,e.type==='tigerking'&&jh?1.15:1);
+  if(e.type==='seethrough'&&e.bs==='move')ctx.globalAlpha=.3+.15*Math.sin(time*8);drawSprite(e.type,e.x+ox,e.y-fl-jh+oy,dir,ty*(e.type==='bear'||(BUILTIN[e.type]&&BUILTIN[e.type].human)?1:0),mv,e.hurt>0,atk,e.type==='tigerking'&&jh?1.15:1);
   if(e.enr){ctx.globalAlpha=.25+Math.sin(time*8)*.1;ctx.fillStyle='#e43b44';ctx.beginPath();ctx.ellipse(e.x,e.y+10,30,9,0,0,7);ctx.fill();ctx.globalAlpha=1}
   if(e.bs==='tele')spr(e.mega?'excl':'excl',e.x,e.y-(e.type==='bear'?92:e.type==='ptero'?100:74)+(Math.floor(time*10)%2?-2:0),0,e.mega?2.6:2);
   if(e.dizzy>0)for(let i=0;i<3;i++){const a=time*5+i*2.1;spr('star',e.x+Math.cos(a)*18,e.y-(e.type==='bear'?84:66)+Math.sin(a)*5,0,1)}
   if(e.slash>0){e.slash-=1/60;const a=Math.atan2(ty,tx);ctx.strokeStyle=`rgba(244,244,248,${e.slash*3})`;ctx.lineWidth=5;ctx.beginPath();ctx.arc(e.x,e.y-24,52,a-1.1,a+1.1);ctx.stroke()}
 }
 
-function safeAt(x,y){if(Q&&Q.pcamp&&Math.hypot(x-Q.pcamp.x,y-Q.pcamp.y)<4*TS)return true;if(Math.hypot(x-T(9),y-T(8))<10*TS)return true;if(HAMLET){const a=(x-HAMLET.x)/(13*TS),b=(y-HAMLET.y)/(8.5*TS);if(a*a+b*b<1)return true}if(Q&&Q.s>=6&&CAMP&&Math.hypot(x-CAMP.x,y-CAMP.y)<6*TS)return true;return false}
+function safeAt(x,y){if(!W1())return safeAtW(x,y);if(Q&&Q.pcamp&&Math.hypot(x-Q.pcamp.x,y-Q.pcamp.y)<4*TS)return true;if(Math.hypot(x-T(9),y-T(8))<10*TS)return true;if(HAMLET){const a=(x-HAMLET.x)/(13*TS),b=(y-HAMLET.y)/(8.5*TS);if(a*a+b*b<1)return true}if(Q&&Q.s>=6&&CAMP&&Math.hypot(x-CAMP.x,y-CAMP.y)<6*TS)return true;return false}
 function emove(e,dx,dy){if(!safeAt(e.x,e.y)&&safeAt(e.x+dx*4,e.y+dy*4))return;moveEnt(e,dx,dy,e.r*.8)}
 function fishSpot(e){let best=null,bd=1e9;for(const[tx,ty]of pondTiles){const px=T(tx),py=T(ty),dp=Math.hypot(px-P.x,py-P.y),de=Math.hypot(px-e.x,py-e.y),open=pondTiles.some(([a,c])=>a===tx-1&&c===ty)&&pondTiles.some(([a,c])=>a===tx+1&&c===ty)&&pondTiles.some(([a,c])=>a===tx&&c===ty-1),sc=Math.abs(dp-85)+(de<40?80:0)+(open?0:120)+Math.random()*50;if(sc<bd){bd=sc;best=[px,py]}}return best||[e.x,e.y]}
 function updEnemy(e,dt){
@@ -2053,6 +2071,7 @@ function updEnemy(e,dt){
   if(e.armorT>0)e.armorT-=dt;
   if(e.stag>0){e.stag-=dt;return}
   if(!e.boss&&safeAt(tg.x,tg.y)&&e.as!=='lunge'){e.as=null;e.dash=0;if(e.ai==='bat'){const hx=e.sx-e.x,hy=e.sy-e.y,hd=Math.hypot(hx,hy)||1;if(hd>4){e.x+=hx/hd*e.spd*.5*dt;e.y+=hy/hd*e.spd*.5*dt}}else home();return}
+  if(e.ai==='shooter'){if(d<270){const want=150;if(d<want-30)emove(e,-dx/d*e.spd*dt,-dy/d*e.spd*dt);else if(d>want+30)emove(e,dx/d*e.spd*dt,dy/d*e.spd*dt);if(e.cd<=0){e.cd=1.8+Math.random()*1.2;e.bitT=.25;shots.push({x:e.x,y:e.y-16,vx:dx/d*240,vy:dy/d*240,t:1.6,enemy:true,bullet:true,dmg:eAtk(e),r:6});sfx('spit')}}else home();return}
   if(e.ai==='chase'){
     if(e.as){e.at-=dt;
       if(e.as==='wind'){if(e.at<=0){e.as='lunge';e.at=.2;e.la=Math.atan2(dy,dx);e.bit=false;sfx('swing')}}
@@ -2114,10 +2133,10 @@ function update(dt){if(inside&&P){time+=dt;if(flash>0)flash-=dt;for(const f of f
   const il=Math.hypot(ix,iy);P.moving=il>.05;if(!P.moving){P.runT=0;P.spd=Math.max(0,(P.spd||0)-dt*600)}
   if(P.moving){if(il>1){ix/=il;iy/=il}const chg=(btn.A&&P.chA>.25)||(btn.B&&P.chB>.25),sp=topSpeed()*Math.max(.45,Math.min(1,il))*(chg?.55:1)*(P.spin&&P.spin.big?.6:1);P.spd=sp;const ox=P.x,oy=P.y;moveEnt(P,ix*sp*dt,iy*sp*dt,9);P.wd=(P.wd||0)+Math.hypot(P.x-ox,P.y-oy);const n=Math.hypot(ix,iy);P.fx=ix/n;P.fy=iy/n}
   P.atkT-=dt;P.kiT-=dt;P.inv-=dt;P.poleT-=dt;TU.inv=(TU.inv||0)-dt;
-  if(btn.A)P.chA+=dt;if(btn.B&&!Q.kame)P.chB+=dt;
+  if(btn.A)P.chA+=dt;if(btn.B)P.chB+=dt;
   if(P.spin){P.spin.t-=dt;if(P.spin.big)P.spin.a+=dt*26;else P.spin.a=P.spin.a0-P.spin.arc/2+P.spin.arc*Math.min(1,(1-P.spin.t/P.spin.l)*1.4);spinTick();if(P.spin.t<=0)P.spin=null}
   P.ki=Math.min(P.maxKi,P.ki+kiRate()*dt);
-  if(time-P.lastHit>8)P.hp=Math.min(P.maxHp,P.hp+.5*dt);
+  if(time-P.lastHit>8)P.hp=Math.min(P.maxHp,P.hp+.5*dt);if(gearUni('regen'))P.hp=Math.min(P.maxHp,P.hp+1.5*dt);
   if(escort())TU.hp=Math.min(TU.maxHp,TU.hp+.8*dt);
 
   if(bulmaVisible()){if(bulmaFollows())bMoving=follow(B,P.x-P.fx*30,P.y-P.fy*30,dt,140);else{const bp=bulmaPost();if(bp){const d=dist(B,bp);if(d>300){B.x=bp.x;B.y=bp.y;bMoving=false}else bMoving=follow(B,bp.x,bp.y,dt,90)}else bMoving=false;if(!bMoving){B.fx=(P.x-B.x)/(dist(P,B)||1);B.fy=(P.y-B.y)/(dist(P,B)||1)}}}else bMoving=false;
@@ -2126,7 +2145,7 @@ function update(dt){if(inside&&P){time+=dt;if(flash>0)flash-=dt;for(const f of f
   for(const e of enemies)updEnemy(e,dt);
   updateNPCs(dt);pushFromNPCs(P,9);pushFromBlockers(P,9);if(bulmaVisible()){pushFromNPCs(B,8);pushFromBlockers(B,8)}
 
-  if(onMountainPath()&&Q.s>=7){rockT-=dt;if(rockT<=0){rockT=1.4;hazards.push({x:P.x+P.fx*50+ri(-30,30),y:P.y+P.fy*50+ri(-30,30),t:1.1,dmg:21})}}
+  if(W1()&&onMountainPath()&&Q.s>=7){rockT-=dt;if(rockT<=0){rockT=1.4;hazards.push({x:P.x+P.fx*50+ri(-30,30),y:P.y+P.fy*50+ri(-30,30),t:1.1,dmg:21})}}
   for(const h of hazards){h.t-=dt;if(h.t<=0&&!h.done){h.done=true;h.boom=.35;if(Math.hypot(P.x-h.x,P.y-h.y)<260)sfx('thud');if(Math.hypot(P.x-h.x,P.y-h.y)<24)hitPlayer(h.dmg)}else if(h.done)h.boom-=dt}
   hazards=hazards.filter(h=>!h.done||h.boom>0);
 
@@ -2154,7 +2173,8 @@ const SCROLL_TXT=['„Tikras stiprumas – ne raumenyse, o širdyje. Kovok tik t
 function pickup(it){
   sfx('pickup');
   if(it.kind==='herb'){Q.herbs=Math.min(9,Q.herbs+1);addFloat(P.x,P.y-24,'+1 žolelė','#63c74d');return}
-  if(it.kind==='gear'){const g=gearG();if(!ownsGear(it.gid))g.inv.push(it.gid);sfx('level');addFloat(P.x,P.y-30,GEAR[it.gid].n,'#feae34');if(!Q.gearTip){Q.gearTip=1;pendingMsg.push([['Patarimas',`Radai ekipuotės daiktą: ${GEAR[it.gid].n} (${gearTxt(it.gid)}). Užsidėk jį: Inventorius → Ekipuotė.`]])}save();return}
+  if(it.kind==='gear'){pickGear(it);return}
+  if(it.kind==='qitem'){const s=wstep();if(s&&s.t==='take')advanceW();return}
   Q.got.push(it.id);
   if(it.kind==='wood'){Q.wood++;addFloat(P.x,P.y-24,`Malkos ${Q.wood}/5`,'#ffe066')}
   if(it.kind==='mush'){const m=Q.got.filter(i=>i[0]==='m').length;addFloat(P.x,P.y-24,`🍄 ${m}`,'#ff9090')}
@@ -2191,7 +2211,8 @@ function drawItem(it){
   else if(it.kind==='mush')spr('mush',x,y+6);
   else if(it.kind==='scroll'){glow('rgba(254,174,52,.25)');spr('scroll',x,y+6)}
   else if(it.kind==='axe'){glow('rgba(254,174,52,.25)');spr('axe',x,y+8)}
-  else if(it.kind==='gear'){glow(`rgba(254,174,52,${.25+.12*Math.sin(time*6)})`);ctx.imageSmoothingEnabled=false;ctx.drawImage(SPX[GEAR[it.gid].ic],Math.round(x-12),Math.round(y-20),24,24)}
+  else if(it.kind==='gear'){glow(`rgba(254,174,52,${.25+.12*Math.sin(time*6)})`);ctx.imageSmoothingEnabled=false;ctx.drawImage(SPX[(it.inst&&it.inst.ic)||'gBand'],Math.round(x-12),Math.round(y-20),24,24)}
+  else if(it.kind==='qitem'){glow(`rgba(254,174,52,${.3+.15*Math.sin(time*6)})`);spr(curW().id===4?'stone':'orb',x,y+6,curW().id===4?0:Math.floor(time*8)%4,curW().id===4?1:2.4)}
 }
 function car(x,y,flipped){const t=BLD.car,w=t.width*2,h=t.height*2;shadow(x,y+10,w*.42);ctx.save();ctx.translate(x,y);ctx.imageSmoothingEnabled=false;if(flipped){ctx.scale(1,-1);ctx.drawImage(t,-w/2,-h/2-8,w,h)}else ctx.drawImage(t,-w/2,-h+12,w,h);ctx.restore();if(flipped){px(x-30,y+8,4,2,'#808088');px(x+22,y+10,3,2,'#f8c030');px(x+30,y+4,2,2,'#9fd3ff')}}
 function capsuleHouse(x,y){const t=BLD.dome,w=t.width*2,h=t.height*2;shadow(x,y+4,w*.45);ctx.imageSmoothingEnabled=false;ctx.drawImage(t,Math.round(x-w/2),Math.round(y-h+8),w,h)}
@@ -2222,39 +2243,39 @@ function render(){if(inside&&P){renderInterior();if(joy){ctx.strokeStyle='#fffff
   for(let y=Math.max(0,y0-1);y<=Math.min(MH-1,y1+3);y++)for(let x=Math.max(0,x0-2);x<=Math.min(MW-1,x1+2);x++){if(map[y][x]!==TREE)continue;
     const tx=x*TS+16+Math.round((hash(y,x)-.5)*8),ty=y*TS,h=hash(x,y),tex=(inForest(x,y)?TEX.canopyD:TEX.canopy)[h<.5?0:1],w=76+Math.floor(h*3)*6,hh=w*36/38;
     ents.push({y:ty+TS-2,by:ty+16,foot:[tx,10],sh:()=>ctx.drawImage(tex,tx-w/2,ty+18-hh,w,hh),d:()=>{const behind=P.y<ty+TS&&P.y>ty-hh+30&&Math.abs(P.x-tx)<w/2-6;if(behind)ctx.globalAlpha=.55;ctx.drawImage(tex,tx-w/2,ty+18-hh,w,hh);ctx.globalAlpha=1}})}
-  if(Q.s>=3)ents.push({y:CAR.y+12,by:CAR.y+10,sh:()=>car(CAR.x,CAR.y,true),d:()=>car(CAR.x,CAR.y,true)});
-  if(Q.s>=5)ents.push({y:CAMP.y+10,d:()=>campfire(CAMP.x,CAMP.y)});
+  if(W1()&&Q.s>=3)ents.push({y:CAR.y+12,by:CAR.y+10,sh:()=>car(CAR.x,CAR.y,true),d:()=>car(CAR.x,CAR.y,true)});
+  if(W1()&&Q.s>=5)ents.push({y:CAMP.y+10,d:()=>campfire(CAMP.x,CAMP.y)});
   if(Q.pcamp)ents.push({y:Q.pcamp.y+10,d:()=>spr('fire',Q.pcamp.x,Q.pcamp.y+10,Math.floor(time*8)%4)});
-  if((Q.s>=6||Q.fire)&&DOME)ents.push({y:DOME.by,by:DOME.by-4,sh:()=>capsuleHouse(DOME.x,DOME.by-8),d:()=>capsuleHouse(DOME.x,DOME.by-8)});
+  if(W1()&&(Q.s>=6||Q.fire)&&DOME)ents.push({y:DOME.by,by:DOME.by-4,sh:()=>capsuleHouse(DOME.x,DOME.by-8),d:()=>capsuleHouse(DOME.x,DOME.by-8)});
   for(const h of HOUSES)ents.push({y:(h.y0+h.h)*TS,by:(h.y0+h.h)*TS+2,sh:()=>drawBuilding(h),d:()=>drawBuilding(h)});
   for(const d of DECOR)if(inView((d.x+.5)*TS,(d.y+.5)*TS))ents.push({y:(d.y+d.h)*TS-2,by:(d.y+d.h)*TS+(d.k.startsWith('fence')?0:4)-2,sh:()=>drawDecor(d),d:()=>drawDecor(d)});
   for(const n of NPCS)if(npcVisible(n)&&inView(n.x,n.y))ents.push({y:n.y+12,sh:()=>drawNPC(n),d:()=>drawNPC(n)});
   for(const it of items)if(itemActive(it)&&inView(it.x,it.y))ents.push({y:it.y+6,d:()=>drawItem(it)});
-  if(Q.s===3)ents.push({y:HOME.y,d:()=>bubble(HOME.x,HOME.y-30,'★','#ffb84d')});
-  if(!villagersHome())ents.push({y:WC.y+12,sh:()=>drawSprite('woodcutter',WC.x,WC.y,...toward(WC),false,false,false),d:()=>{drawSprite('woodcutter',WC.x,WC.y,...toward(WC),false,false,false);if(Q.s===4)bubble(WC.x,WC.y-58,'!');else if(Q.s>=5&&(Q.sq1===0||Q.sq1===2))bubble(WC.x,WC.y-58,Q.sq1===2?'?':'!','#7CFC00')}});
-  if(!villagersHome())ents.push({y:HB.y+12,sh:()=>drawSprite('herbalist',HB.x,HB.y,...toward(HB),false,false,false),d:()=>{drawSprite('herbalist',HB.x,HB.y,...toward(HB),false,false,false);if(Q.s>=5&&(Q.sq2===0||(Q.sq2===1&&Q.got.filter(i=>i[0]==='m').length>=6)))bubble(HB.x,HB.y-56,Q.sq2===1?'?':'!','#7CFC00')}});
+  if(W1()&&Q.s===3)ents.push({y:HOME.y,d:()=>bubble(HOME.x,HOME.y-30,'★','#ffb84d')});
+  if(W1()&&!villagersHome())ents.push({y:WC.y+12,sh:()=>drawSprite('woodcutter',WC.x,WC.y,...toward(WC),false,false,false),d:()=>{drawSprite('woodcutter',WC.x,WC.y,...toward(WC),false,false,false);if(Q.s===4)bubble(WC.x,WC.y-58,'!');else if(Q.s>=5&&(Q.sq1===0||Q.sq1===2))bubble(WC.x,WC.y-58,Q.sq1===2?'?':'!','#7CFC00')}});
+  if(W1()&&!villagersHome())ents.push({y:HB.y+12,sh:()=>drawSprite('herbalist',HB.x,HB.y,...toward(HB),false,false,false),d:()=>{drawSprite('herbalist',HB.x,HB.y,...toward(HB),false,false,false);if(Q.s>=5&&(Q.sq2===0||(Q.sq2===1&&Q.got.filter(i=>i[0]==='m').length>=6)))bubble(HB.x,HB.y-56,Q.sq2===1?'?':'!','#7CFC00')}});
   if(bulmaVisible())ents.push({y:B.y+12,sh:()=>drawSprite('bulma',B.x,B.y,B.fx||0,B.fy||1,bMoving?(B.wd||0):false,false,false),d:()=>drawSprite('bulma',B.x,B.y,B.fx||0,B.fy||1,bMoving?(B.wd||0):false,false,false)});
-  if(Q.s>=8)ents.push({y:TU.y+12,sh:()=>drawSprite('turtle',TU.x,TU.y,TU.fx||-1,TU.fy||0,tMoving,false,false),d:()=>{drawSprite('turtle',TU.x,TU.y,TU.fx||-1,TU.fy||0,tMoving,TU.inv>0,false);if(Q.s===8)bubble(TU.x,TU.y-24,'!');
+  if(W1()&&Q.s>=8)ents.push({y:TU.y+12,sh:()=>drawSprite('turtle',TU.x,TU.y,TU.fx||-1,TU.fy||0,tMoving,false,false),d:()=>{drawSprite('turtle',TU.x,TU.y,TU.fx||-1,TU.fy||0,tMoving,TU.inv>0,false);if(Q.s===8)bubble(TU.x,TU.y-24,'!');
     if(escort()&&TU.hp<TU.maxHp){ctx.fillStyle='#000a';ctx.fillRect(TU.x-14,TU.y-26,28,4);ctx.fillStyle='#7CFC00';ctx.fillRect(TU.x-14,TU.y-26,28*TU.hp/TU.maxHp,4)}}});
-  if(Q.s>=12)ents.push({y:RO.y+12,sh:()=>drawSprite('roshi',RO.x,RO.y,...toward(RO),false,false,false),d:()=>{drawSprite('roshi',RO.x,RO.y,...toward(RO),false,false,false);if(Q.s===12)bubble(RO.x,RO.y-50,'!')}});
+  if(W1()&&Q.s>=12)ents.push({y:RO.y+12,sh:()=>drawSprite('roshi',RO.x,RO.y,...toward(RO),false,false,false),d:()=>{drawSprite('roshi',RO.x,RO.y,...toward(RO),false,false,false);if(Q.s===12)bubble(RO.x,RO.y-50,'!')}});
   for(const e of enemies)if(e.type==='drytree'&&!e.alive&&inView(e.x,e.y))ents.push({y:e.y+12,d:()=>spr('stump',e.x,e.y+12)});
-  for(const e of enemies){if(!e.alive||(e.cond&&!e.cond())||!inView(e.x,e.y))continue;if(e.boss&&!e.eng&&!(e.dying>0))continue;ents.push({y:e.y+(e.type==='drytree'?16:e.type==='dummy'||e.type==='post'||e.type==='rock'?14:12),sh:(e.fly||e.type==='fish'||e.type==='bat'||e.dying>0)?null:e.type==='drytree'?()=>spr('drytree',e.x,e.y+16,0,2):e.type==='dummy'?()=>drawDummy(e):e.type==='post'?()=>drawPost(e):e.type==='rock'?()=>drawRock(e):()=>drawSprite(e.type,e.x,e.y-(e.jh||0),...toward(e),true,false,false),d:()=>{
+  for(const e of enemies){if(!e.alive||(e.cond&&!e.cond())||!inView(e.x,e.y))continue;if(e.boss&&!e.eng&&!(e.dying>0))continue;ents.push({y:e.y+(e.type==='drytree'?16:e.type==='dummy'||e.type==='post'||e.type==='rock'?14:12),sh:(e.fly||e.type==='fish'||e.type==='bat'||e.dying>0)?null:e.type==='drytree'?()=>spr('drytree',e.x,e.y+16,0,2):e.type==='dummy'?()=>drawDummy(e):e.type==='post'?()=>drawPost(e):e.type==='rock'?()=>drawRock(e):()=>drawSprite(e.type,e.x,e.y-(e.jh||0),...toward(e),true,false,false),d:()=>{if(e.elite&&canFilter)ctx.filter=ELITE_F;
     if(e.type==='drytree')return spr('drytree',e.x,e.y+16,0,2,e.hurt>0?.5:null);
     if(e.type==='dummy')return drawDummy(e);if(e.type==='post')return drawPost(e);if(e.type==='rock')return drawRock(e);
     if(e.type==='fish'){drawFish(e);return}
     const fl=e.fly&&e.type==='ptero'?16:e.type==='bat'?14:0;
     if(fl&&!BOSSDEF[e.type])shadow(e.x,e.y+12,e.type==='bat'?6:18);
     if(e.dying>0){const sx2=Math.round((Math.random()-.5)*6);ctx.globalAlpha=Math.min(1,e.dying);drawSprite(e.type,e.x+sx2,e.y-fl,...toward(e),false,Math.floor(time*16)%2===0,false);ctx.globalAlpha=1}else
-    if(BOSSDEF[e.type])drawBoss(e);else{let ap=false,ox=0;if(e.stag>0){ap={type:'hurt',p:0};ox=Math.round((Math.random()-.5)*4)}else if(e.as){ap={type:'punch',p:e.as==='wind'?.1:e.as==='lunge'?.4:.9}}else if(e.bitT>0){e.bitT-=1/60;ap={type:'punch',p:.6}}else if(e.dash>0)ap={type:'punch',p:.4};if(e.armorT>0){ctx.globalAlpha=.35+Math.sin(time*20)*.15;ctx.fillStyle='#e43b44';ctx.beginPath();ctx.ellipse(e.x,e.y+8,e.r+8,(e.r+8)*.4,0,0,7);ctx.fill();ctx.globalAlpha=1}drawSprite(e.type,e.x+ox,e.y-fl,...toward(e),!e.as,e.hurt>0,ap)}
+    if(BOSSDEF[e.type]){drawBoss(e);ctx.globalAlpha=1}else{let ap=false,ox=0;if(e.stag>0){ap={type:'hurt',p:0};ox=Math.round((Math.random()-.5)*4)}else if(e.as){ap={type:'punch',p:e.as==='wind'?.1:e.as==='lunge'?.4:.9}}else if(e.bitT>0){e.bitT-=1/60;ap={type:'punch',p:.6}}else if(e.dash>0)ap={type:'punch',p:.4};if(e.armorT>0){ctx.globalAlpha=.35+Math.sin(time*20)*.15;ctx.fillStyle='#e43b44';ctx.beginPath();ctx.ellipse(e.x,e.y+8,e.r+8,(e.r+8)*.4,0,0,7);ctx.fill();ctx.globalAlpha=1}drawSprite(e.type,e.x+ox,e.y-fl,...toward(e),!e.as,e.hurt>0,ap)}
     if(!BOSSDEF[e.type]&&e.slash>0){e.slash-=1/60;const[tx,ty]=toward(e),a=Math.atan2(ty,tx);ctx.strokeStyle=`rgba(244,244,248,${e.slash*3})`;ctx.lineWidth=5;ctx.beginPath();ctx.arc(e.x,e.y-30,46,a-1.1,a+1.1);ctx.stroke();ctx.strokeStyle=`rgba(139,155,180,${e.slash*3})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(e.x,e.y-30,40,a-.9,a+.9);ctx.stroke()}
-    hpBar(e,e.y-(e.type==='snake'?22:36))}})}
+    ctx.filter='none';hpBar(e,e.y-(e.type==='snake'?22:36));if(e.elite){ctx.fillStyle='#c77dff';ctx.font='bold 9px monospace';ctx.textAlign='center';ctx.fillText('★'+e.lv,e.x,e.y-(e.type==='snake'?26:40))}}})}
   ents.push({y:P.y+12,sh:P.dead?null:()=>drawSprite('hero',P.x,P.y,P.fx,P.fy,P.moving?(P.wd||0):false,false,heroAtk()),d:()=>{
     if(P.spin){const S=P.spin,cy=P.y-12,L=S.R*.95,k=1-S.t/S.l;
       if(S.big){ctx.globalAlpha=.35*(1-k*.5);ctx.strokeStyle='#ffe08a';ctx.lineWidth=10;ctx.beginPath();ctx.arc(P.x,cy,L*.8,S.a-2.2,S.a);ctx.stroke();ctx.globalAlpha=1;
         for(const sg of[0,Math.PI]){const a=S.a+sg,ex=P.x+Math.cos(a)*L*(sg?.35:1),ey=cy+Math.sin(a)*L*(sg?.35:1)*.85;ctx.strokeStyle='#4a2c14';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(P.x,cy);ctx.lineTo(ex,ey);ctx.stroke();ctx.strokeStyle='#c8401c';ctx.lineWidth=3;ctx.stroke()}}
       else{const a0=S.a0-S.arc/2;ctx.globalAlpha=.3*(1-k);ctx.strokeStyle='#f4f4f4';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(P.x,cy,L*.85,L*.85*.85,0,a0,S.a);ctx.stroke();ctx.globalAlpha=1;
         const ex=P.x+Math.cos(S.a)*L,ey=cy+Math.sin(S.a)*L*.85,bx=P.x-Math.cos(S.a)*8,by=cy-Math.sin(S.a)*7;ctx.strokeStyle='#4a2c14';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(ex,ey);ctx.stroke();ctx.strokeStyle='#c8401c';ctx.lineWidth=3;ctx.stroke()}}
-    {const ch=btn.A&&P.skPunch>0?P.chA:btn.B&&P.skSpin>0&&!Q.kame?P.chB:0;if(ch>.15){const k=Math.min(1,(ch-.15)/(CHARGE-.15)),full=k>=1;
+    {const ch=btn.A&&P.skPunch>0?P.chA:btn.B&&P.skSpin>0?P.chB:0;if(ch>.15){const k=Math.min(1,(ch-.15)/(CHARGE-.15)),full=k>=1;
       ctx.strokeStyle=full?(Math.floor(time*12)%2?'#fff':'#feae34'):'rgba(124,200,255,.85)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(P.x,P.y-12,24,-Math.PI/2,-Math.PI/2+k*Math.PI*2);ctx.stroke();
       if(full&&Math.random()<.4)puff(P.x+ri(-12,12),P.y-4,1,['#feae34','#fff'],40,.4,-60,1.5)}}
     if(P.dead){const k=Math.min(1,(2.6-P.dead.t)*2.5);ctx.save();ctx.translate(P.x,P.y+8);ctx.rotate(-Math.PI/2*k*(P.fx<0?-1:1));drawSprite('hero',0,-8,P.fx,0,false,P.dead.t>2.3,false);ctx.restore();return}
@@ -2271,7 +2292,7 @@ function render(){if(inside&&P){renderInterior();if(joy){ctx.strokeStyle='#fffff
   ents.sort((a,b)=>a.y-b.y).forEach(e=>e.d());
   csDraw();
 
-  for(const s of shots){if(s.enemy)spr('drop',s.x,s.y);else spr('ki',s.x,s.y+(s.r>8?6:2),Math.floor(time*12)%2,s.r>8?2.4:1.8)}
+  for(const s of shots){if(s.enemy){if(s.bullet){ctx.fillStyle='#181425';ctx.fillRect(s.x-4,s.y-4,8,8);ctx.fillStyle='#ffe08a';ctx.fillRect(s.x-3,s.y-3,6,6)}else spr('drop',s.x,s.y)}else spr('ki',s.x,s.y+(s.r>8?6:2),Math.floor(time*12)%2,s.r>8?2.4:1.8)}
   drawParts();drawBubbles();
   for(const o of orbs){if(o.t>(o.life||90)-8&&Math.floor(time*8)%2)continue;spr('orb',o.x,o.y-o.z+6,Math.floor(time*10+o.ph)%4,1.6)}
   for(const f of flyers)spr(f.k,f.x,f.y,0,1.6);
@@ -2285,7 +2306,7 @@ function render(){if(inside&&P){renderInterior();if(joy){ctx.strokeStyle='#fffff
   if(tt>=16.5&&tt<20.5){const a=Math.min(1,(tt-16.5)/2)*.26;ctx.fillStyle=`rgba(255,110,40,${a})`;ctx.fillRect(0,0,W,H)}
   else if(tt>=5.5&&tt<8.5){const a=(1-Math.abs(tt-6.6)/1.9)*.2;ctx.fillStyle=`rgba(255,170,120,${Math.max(0,a)})`;ctx.fillRect(0,0,W,H)}
   if(dkn>0){const g=ctx.createRadialGradient(sx,sy,30*Z,sx,sy,170*Z);g.addColorStop(0,`rgba(8,14,48,${dkn*.1})`);g.addColorStop(1,`rgba(8,14,48,${dkn})`);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    if(Q.fire||Q.s>=6){const fx=(CAMP.x-cx)*Z,fy=(CAMP.y-cy)*Z;const g2=ctx.createRadialGradient(fx,fy,0,fx,fy,110*Z);g2.addColorStop(0,'rgba(255,170,60,.25)');g2.addColorStop(1,'rgba(255,170,60,0)');ctx.fillStyle=g2;ctx.fillRect(0,0,W,H)}
+    if(W1()&&(Q.fire||Q.s>=6)){const fx=(CAMP.x-cx)*Z,fy=(CAMP.y-cy)*Z;const g2=ctx.createRadialGradient(fx,fy,0,fx,fy,110*Z);g2.addColorStop(0,'rgba(255,170,60,.25)');g2.addColorStop(1,'rgba(255,170,60,0)');ctx.fillStyle=g2;ctx.fillRect(0,0,W,H)}
     if(Q.pcamp){const fx=(Q.pcamp.x-cx)*Z,fy=(Q.pcamp.y-cy)*Z;const g3=ctx.createRadialGradient(fx,fy,0,fx,fy,100*Z);g3.addColorStop(0,'rgba(255,170,60,.28)');g3.addColorStop(1,'rgba(255,170,60,0)');ctx.fillStyle=g3;ctx.fillRect(0,0,W,H)}}
   if(dkn<.4&&(tileAt(P.x,P.y)===DARK||tileAt(P.x,P.y)===CAVEF)){const g=ctx.createRadialGradient(sx,sy,90*Z,sx,sy,Math.max(W,H)*.75);g.addColorStop(0,'rgba(0,20,0,0)');g.addColorStop(1,tileAt(P.x,P.y)===CAVEF?'rgba(0,0,0,.6)':'rgba(0,25,0,.4)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H)}
 
@@ -2319,7 +2340,7 @@ function drawArena(){for(const e of enemies){if(!e.boss||!e.eng||!e.alive)contin
 function activeBoss(){for(const e of enemies)if(e.boss&&e.eng&&e.alive&&(!e.cond||e.cond()))return e;return null}
 function activeBossOld(){for(const e of enemies){if(!e.boss||!e.alive||(e.cond&&!e.cond()))continue;if(e.type==='fish'){if(Q.fishOn&&Math.hypot(P.x-T(POND.x),P.y-T(POND.y))<240)return e;continue}const D=BOSSDEF[e.type];if(!D)continue;if((e.bs&&e.bs!=='move')||Math.hypot(P.x-e.sx,P.y-e.sy)<D.aggro)return e}return null}
 let lastQ='';
-function hud(){
+function hud(){if(P){const kv=Q.kame?'flex':'none';if($('bK').style.display!==kv)$('bK').style.display=kv}
   if(!P)return;
   $('lv').textContent=P.lvl;const hn=N('hero');if($('heroName').textContent!==hn)$('heroName').textContent=hn;
   const bt=Q.balls+'/7';if($('balls').textContent!==bt)$('balls').textContent=bt;
@@ -2330,7 +2351,7 @@ function hud(){
   if(P&&!mapOpen&&mapSeen!==questText()){$('mapNew').style.display=mapSeen===''&&Q.s===0&&Q.dummies===0?'none':'block'}
   if(qh!==lastQ){if(qCollapsed&&lastQ)$('qBadge').style.display='block';lastQ=qh;const q=$('quest');q.innerHTML='<span class="qt">UŽDUOTIS <span style="opacity:.6;font-weight:400">▲</span></span>';q.append(questText());for(const[ic,t]of sq){const sp=document.createElement('span');sp.className='sq';const im=document.createElement('img');im.className='ic';im.src=ICON[ic];sp.append(im,' '+t);q.append(sp)}}
   {const v=(P.pts||techAvail())?'block':'none';if($('stBadge').style.display!==v)$('stBadge').style.display=v;$('pts').style.display='none'}
-  const bl=Q.kame?'KAME':'LAZDA';if($('bBl').textContent!==bl){$('bBl').textContent=bl;$('icB').src=ICON[Q.kame?'kame':'staff']}
+  const bl='LAZDA';if($('bBl').textContent!==bl){$('bBl').textContent=bl;$('icB').src=ICON.staff}
   const ht=String(Q.herbs);if($('bHn').textContent!==ht)$('bHn').textContent=ht;
   drawPortrait($('portrait'),'hero');
   const ct=phaseName()+' '+clockStr();if($('clockT').textContent!==ct){$('clockT').textContent=ct;$('icClock').src=ICON[isNight()?'moon':'sun']}
@@ -2341,6 +2362,732 @@ function hud(){
   if(b&&!dlg&&!P.dead){bb.style.display='block';const nm=(b.bs==='tele'&&b.mega&&b.cur?'⚠ '+b.cur.name+'! ':'')+N(b.type)+(b.rec?`  ·  rek. Lv ${b.rec}`:'')+(b.enr?' · ĮSIUTĘS':'');$('bossName').style.color=P.lvl<b.rec?'#e43b44':'#fff';if($('bossName').textContent!==nm)$('bossName').textContent=nm;bb.querySelector('i').style.width=Math.max(0,b.hp/b.maxHp*100)+'%'}else bb.style.display='none';
 }
 function showEnd(){const m=Math.round(Q.play/60);$('endStats').textContent=`Žaidimo laikas: ~${m} min. Lygis: ${P.lvl}. Nugalėta priešų: ${Q.kills}. Drakono rutuliai: 4/7. Senelio užrašai: ${Q.scrolls}/3.`;$('endOv').style.display='flex'}
+
+/* ================= WORLDS: CORE ================= */
+let WID=1,BIO=null,POI={};
+const W1=()=>WID===1;
+const NAMES={};
+function curW(){return WORLDS[WID]}
+function wq(){Q.W=Q.W||{};return Q.W[WID]||(Q.W[WID]={st:0,cnt:0,bd:{},got:[],intro:false,done:false})}
+function wqOf(id){Q.W=Q.W||{};return Q.W[id]||null}
+function wstep(){const W=curW();return W&&W.steps[wq().st]}
+function worldDone(id){const q=wqOf(id);return !!(q&&q.done)}
+
+/* ---------- sprite helpers ---------- */
+function recolorTex(src,filter){const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const g=c.getContext('2d');g.imageSmoothingEnabled=false;if(canFilter)g.filter=filter;g.drawImage(src,0,0);return c}
+const CHAR2={};
+function defHuman(k,name,h,C){CHAR2[k]=()=>{BUILTIN[k]={stepPx:5*(h/42),idleRows:[13,14,15],frames:6,rows:18,rDown:1,rUp:2,rSide:3,rAtk:4,rAtkD:5,rAtkU:6,atkRows:{punch:[4,5,6],kick:[7,8,9],palm:[10,11,12],punch2:[16,17,18]},human:true,flip:false,tex:hdSheet(Object.assign({style:'short',shoes:'#3a2414',belt:'#2a1a10',eye:'#201820'},C)),h}};NAMES[k]=name}
+function defQuad(k,name,h,C){CHAR2[k]=()=>{BUILTIN[k]={frames:4,rows:3,rSide:1,rAtk:2,sideOnly:true,atkRows:{punch:[2,2,2],hurt:[3,3,3]},flip:false,tex:quadSheet(C),h}};NAMES[k]=name}
+function defVar(k,name,base,filter,h){CHAR2[k]=()=>{const b=BUILTIN[base];BUILTIN[k]=Object.assign({},b,{tex:recolorTex(b.tex,filter),h:h||b.h})};NAMES[k]=name}
+function ensureChar(k){if(!BUILTIN[k]&&CHAR2[k])CHAR2[k]()}
+{const oN=N;N=function(k){const v=oN(k);return v===k&&NAMES[k]?NAMES[k]:v}}
+
+/* ---------- biomes (luminance ramps per terrain class) ---------- */
+const LR={0:[.22,.62],1:[.15,.5],2:[.55,.92],3:[.42,.82],4:[.25,.65],5:[.15,.42],6:[.35,.72],7:[.12,.78]};
+const BIOMES={
+  steppe:{0:['#6a5a28','#9a8a3e','#c4b45c','#e0d48c'],1:['#4a4a24','#6a6a30','#8a8a40','#a8a858'],3:['#8a6a40','#b08a58','#cca878','#e0c498'],7:['#6a3a24','#9a5a34','#c07a48','#e0a070'],canopy:['#b0b060','#8a8a44','#6a6a34','#4a4a26']},
+  desert:{0:['#9a7a3e','#c49a58','#dcbc7c','#f0dca8'],1:['#7a5a30','#9a7a40','#b89458','#d0b070'],3:['#8a6a40','#b08a58','#cca878','#e0c498'],7:['#6a3220','#9a4e2c','#c06c3c','#e09060'],canopy:['#9ab060','#6a8a44','#4a6a34','#2e4a26']},
+  volcano:{0:['#2a2224','#4a3a36','#6a5048','#8a6a5a'],1:['#1e1618','#34282a','#4e3c38','#6a5048'],2:['#3a2a26','#5a4036','#7a5848','#9a7060'],3:['#4a3428','#6a4a36','#8a6448','#a8805c'],4:['#8a1a08','#d84010','#f88a20','#ffd060'],7:['#1a1414','#3a2a26','#5a4038','#7a5a4a'],canopy:['#5a4a3a','#3a2e26','#2a201c','#1a1412'],canopyD:['#4a3a2e','#30241e','#221a16','#140e0c']},
+  tropic:{0:['#2e7a3a','#48a44a','#6cc45a','#9ae070'],1:['#1e5a2e','#2e7a3a','#48964a','#64b05a'],2:['#d8c088','#ecd8a0','#f8ecc0','#fff8e0'],4:['#1a6a9a','#2a9ac8','#4ac0e0','#a0ecf8'],canopy:['#8ad860','#4aa840','#2e8034','#1e5a28']},
+  city:{0:['#4a7a3a','#62984a','#80b45c','#a0cc78'],2:['#8a8a90','#a8a8b0','#c4c4cc','#dcdce4'],3:['#6a6a74','#8a8a94','#a8a8b4','#c8c8d0'],canopy:['#90c06c','#66a050','#467f3e','#316034']},
+  dusk:{0:['#4a5a3a','#5e7448','#788c58','#94a870'],2:['#7a6a78','#9a8898','#b4a4b4','#ccbccc'],3:['#5a5266','#7a7086','#9a90a4','#b4acbe'],canopy:['#7a9a5a','#567a46','#3e5e38','#2a4228']},
+  snow:{0:['#9aaac0','#c0cede','#dce6f0','#f4f8fc'],1:['#6a7a94','#8a9ab0','#aab8cc','#c8d4e2'],2:['#a8b8cc','#c8d6e4','#e0e8f2','#f8fbff'],3:['#7a7a88','#9a9aa8','#babac6','#d4d4de'],4:['#3a6a9a','#5a8ab8','#8ab4d8','#c8e4f8'],7:['#3a4458','#5a6478','#7a8498','#a8b2c4'],canopy:['#e8f0f8','#b8d0d8','#4a7a68','#2e5444'],canopyD:['#d8e4ee','#a0bcc8','#3a6858','#24443a']},
+  jungle:{0:['#3a7a2e','#529a3a','#6eb848','#94d064'],1:['#1e4e22','#2e682a','#3e8034','#56984a'],canopy:['#6ac048','#3e9a38','#287430','#1a5224'],canopyD:['#4aa038','#2e7c30','#1e5c26','#123e1a']},
+  waste:{0:['#5a5444','#766e58','#928a70','#aea68a'],1:['#3e3a30','#544e40','#6a6250','#867c66'],2:['#7a7060','#968c78','#b0a890','#c8c0a8'],3:['#5a5048','#76695e','#928478','#ac9e92'],4:['#2a3a4a','#3a5266','#507088','#7090a8'],7:['#2a2628','#443e3e','#5e5656','#7a7070'],canopy:['#6a6a4a','#4e4e36','#3a3a28','#26261a']},
+  palace:{0:['#a88a52','#c4a46a','#d8bc84','#ecd6a4'],2:['#c8a868','#dcc084','#ecd6a0','#f8ecc8'],3:['#7a5a8a','#9a78aa','#b898c4','#d4b8dc'],4:['#1a5a7a','#2a7aa0','#4aa0c4','#90d0ec'],7:['#5a3e2a','#7a5638','#9a704a','#ba8c62'],canopy:['#9ab060','#6a8a44','#4a6a34','#2e4a26']}
+};
+function bioPix(c,r,g,b){const ramp=BIO&&BIO[c];if(!ramp)return null;const L=(.299*r+.587*g+.114*b)/255,lr=LR[c]||[.2,.8];let t=(L-lr[0])/(lr[1]-lr[0]);t=Math.max(0,Math.min(.999,t))*3;const i=Math.floor(t),f=t-i;const A=hexRGB(ramp[i]),B2=hexRGB(ramp[Math.min(3,i+1)]);return[A[0]+(B2[0]-A[0])*f,A[1]+(B2[1]-A[1])*f,A[2]+(B2[2]-A[2])*f]}
+const _hexc={};function hexRGB(h){return _hexc[h]||(_hexc[h]=[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)])}
+
+/* ---------- buildings for worlds ---------- */
+function fortSheet(C){const Wd=C.w||96,Hd=C.h||84;return mkSheet(Wd,Hd,1,1,(A)=>{const{R,P,E}=A;const top=C.top||26;
+  R(4,top,Wd-8,Hd-top-2,C.wall);for(let y=top+4;y<Hd-2;y+=6)for(let x=4+((y/6|0)%2)*5;x<Wd-4;x+=10)R(x,y,1,5,C.line);for(let y=top+2;y<Hd-2;y+=6)R(4,y,Wd-8,1,C.line);
+  for(let x=4;x<Wd-4;x+=8)R(x,top-5,5,5,C.wall);R(4,top-1,Wd-8,2,C.trim||C.line);
+  if(C.towers){for(const tx of[0,Wd-18]){R(tx,top-14,18,Hd-top+12,C.wall);for(let x=tx;x<tx+18;x+=6)R(x,top-19,4,5,C.wall);R(tx,top-14,18,2,C.trim||C.line);R(tx+6,top-4,6,8,'#1c1424');if(C.dome){E(tx+9,top-22,8,7,C.dome,(x,y)=>y<=top-18)}}}
+  if(C.dome&&!C.towers)E(Wd/2,top-6,Wd*.22,Wd*.18,C.dome,(x,y)=>y<=top);
+  if(C.dome){E(Wd/2,top-8,Wd*.16,Wd*.14,C.dome,(x,y)=>y<=top-2);P(Wd/2,top-8-Math.round(Wd*.14),C.trim||'#feae34')}
+  const gw=C.gate||18;R(Wd/2-gw/2,Hd-26,gw,24,'#1c1424');E(Wd/2,Hd-26,gw/2,7,'#1c1424',(x,y)=>y<=Hd-26);R(Wd/2-gw/2+2,Hd-24,gw-4,22,C.door||'#4a2c14');
+  for(const wx of[14,Wd-24]){R(wx,top+10,10,10,'#1c1424');R(wx+1,top+11,8,8,C.win||'#feae34')}
+  if(C.flag){R(Wd/2-1,1,2,top-14,'#3a2a1a');R(Wd/2+1,2,12,7,C.flag)}
+  if(C.emblem){E(Wd/2,top+12,6,6,C.emblem);E(Wd/2,top+12,3.5,3.5,C.wall)}
+  if(C.fire){for(let i=0;i<14;i++){const x=6+((i*37)%(Wd-12)),y=top-6+((i*13)%10);E(x,y,4,6,i%2?'#f88a20':'#e43b44');E(x,y-2,2,3,'#ffd060')}}
+  if(C.rr){R(Wd/2-10,top+4,20,6,'#e43b44');R(Wd/2-2,top+2,4,10,'#e43b44')}
+},'#1c1424')}
+function towerSheet(C){return mkSheet(C.w||40,C.h||120,1,1,(A)=>{const{R,E}=A;const w=C.w||40,h=C.h||120;
+  R(4,10,w-8,h-12,C.wall);for(let y=14;y<h-2;y+=8)R(4,y,w-8,1,C.line);R(6,10,3,h-12,C.light||C.wall);R(w-9,10,3,h-12,C.line);
+  for(let y=24;y<h-30;y+=20){R(w/2-4,y,8,8,'#1c1424');R(w/2-3,y+1,6,6,C.win||'#feae34')}
+  R(2,4,w-4,7,C.top||C.line);R(w/2-6,h-20,12,18,'#1c1424');if(C.rr){R(w/2-8,30,16,5,'#e43b44');R(w/2-2,27,4,11,'#e43b44')}if(C.cap)E(w/2,6,w/2-4,6,C.cap)},'#1c1424')}
+function buildWorldBuildings(){if(BLD.adobe)return;
+  const cot=(o)=>cottageSheet(Object.assign({wall:'#d8b07a',wallLine:'#b8905a',roof:'#a85a2a',roofDark:'#6a3218',roofSeam:'#8a4420',roofLight:'#c87a48',ridge:'#3a1a0a',curtain:'#e8c040',curtainDark:'#a88020'},o));
+  BLD.adobe=cot({});BLD.adobe2=cot({roof:'#7a6a3a',roofDark:'#4a3e1e',roofSeam:'#625430',roofLight:'#9a8a52',curtain:'#3a8ad0',curtainDark:'#2a5a90',pots:true});
+  BLD.kamehouse=cot({wall:'#f0a0b8',wallLine:'#d07890',roof:'#d83a3a',roofDark:'#8a1e1e',roofSeam:'#b02a2a',roofLight:'#f06a6a',ridge:'#3a1a1a',curtain:'#3a8ad0',curtainDark:'#2a5a90'});
+  BLD.cityA=cot({wall:'#e8e0d0',wallLine:'#c8c0b0',roof:'#3a6ab0',roofDark:'#22407a',roofSeam:'#2e5490',roofLight:'#5a8ad0',ridge:'#1a2a4a'});
+  BLD.cityB=cot({wall:'#f0d8a8',wallLine:'#d0b888',roof:'#3a8a5a',roofDark:'#1e5a38',roofSeam:'#2e7048',roofLight:'#5aaa78',ridge:'#1a3a2a',pots:true});
+  BLD.cityC=cot({wall:'#d8c8e0',wallLine:'#b8a8c0',roof:'#8a3a6a',roofDark:'#5a1e44',roofSeam:'#702a58',roofLight:'#aa5a8a',ridge:'#2a1a2a'});
+  BLD.snowhouse=cot({wall:'#c09a70',wallLine:'#a07a50',roof:'#f4f8fc',roofDark:'#b8c8d8',roofSeam:'#d8e4ee',roofLight:'#ffffff',ridge:'#8a9ab0',curtain:'#e43b44',curtainDark:'#a01e28',logs:true});
+  BLD.ruin=cot({wall:'#8a8478',wallLine:'#6a6458',roof:'#5a5048',roofDark:'#3a3430',roofSeam:'#4a423c',roofLight:'#7a7064',ridge:'#2a2420',curtain:'#3a3430',curtainDark:'#2a2420'});
+  BLD.mansion=fortSheet({w:96,h:80,wall:'#c8b090',line:'#a08a6a',trim:'#7a5a3a',dome:'#c84a3a',win:'#feae34',door:'#6a3a1a',flag:'#c84a3a'});
+  BLD.oxcastle=fortSheet({w:112,h:96,wall:'#8a7a6a',line:'#5a4e44',trim:'#3a302a',towers:true,win:'#f88a20',door:'#3a1a0a',fire:true});
+  BLD.pilafcastle=fortSheet({w:112,h:96,wall:'#9aa0b0',line:'#6a7080',trim:'#3a5aa0',towers:true,dome:'#3a7ad0',win:'#ffd060',flag:'#3a7ad0'});
+  BLD.musclet=towerSheet({w:40,h:132,wall:'#b8b0a8',line:'#8a8278',light:'#d8d0c8',top:'#6a6058',rr:true,win:'#e8f0f8'});
+  BLD.rrbase=fortSheet({w:120,h:84,wall:'#8a8a90',line:'#5a5a64',trim:'#3a3a44',towers:true,rr:true,win:'#e8f0f8',door:'#3a3a44'});
+  BLD.babapal=fortSheet({w:112,h:96,wall:'#d8b8e0',line:'#a888b8',trim:'#6a3a8a',dome:'#b55088',towers:true,win:'#feae34',flag:'#b55088'});
+  BLD.karin=towerSheet({w:30,h:150,wall:'#e8e0d0',line:'#b8b0a0',light:'#fff8e8',top:'#c83a3a',cap:'#c83a3a',win:'#3a6ab0'});
+  BLD.kingcastle=fortSheet({w:120,h:100,wall:'#c8c0a8',line:'#9a9278',trim:'#5a3a8a',towers:true,dome:'#5a3a8a',win:'#feae34',flag:'#5aa848',emblem:'#5aa848'});
+  BLD.arena=mkSheet(16,6,1,1,({R})=>{R(0,0,16,6,'#00000000')});
+  BLD.tent=mkSheet(40,34,1,1,({R,P})=>{for(let y=4;y<32;y++){const hw=Math.round((y-4)*.7)+2;R(20-hw,y,hw*2,1,y%6<3?'#e43b44':'#f4f4f4')}R(17,22,6,10,'#3a1a0a');R(19,0,2,5,'#6b4423');R(21,0,6,3,'#feae34')});
+  BLD.cactus=mkSheet(18,30,1,1,({R,E})=>{R(7,4,5,25,'#3e8948');R(8,4,2,25,'#63c74d');R(1,10,4,9,'#3e8948');R(1,17,7,3,'#3e8948');R(13,8,4,8,'#3e8948');R(11,14,6,3,'#3e8948');E(9.5,4,2.5,2,'#63c74d')});
+  BLD.lantern=mkSheet(14,30,1,1,({R,E})=>{R(6,10,2,20,'#3a2a1a');E(7,8,5,6,'#e43b44');E(7,7,3,3,'#feae34');R(3,2,8,2,'#3a2a1a')});
+  BLD.statue=mkSheet(24,40,1,1,({R,E})=>{R(4,30,16,9,'#8b9bb4');R(4,30,16,2,'#c0cbdc');E(12,18,6,9,'#a8b0c0');E(12,8,4.5,4.5,'#a8b0c0');R(7,14,10,2,'#8b9bb4')});
+  BLD.crate=mkSheet(16,16,1,1,({R})=>{R(1,2,14,13,'#a8763a');R(1,2,14,2,'#c8965a');R(1,8,14,1,'#6b4423');R(7,2,1,13,'#6b4423')});
+  BLD.pillar=mkSheet(16,40,1,1,({R})=>{R(3,4,10,34,'#c8c0b0');R(3,4,3,34,'#e8e0d0');R(1,0,14,5,'#a8a090');R(1,36,14,4,'#a8a090')});
+}
+
+/* ---------- world map generation ---------- */
+function genWorld(W){
+  buildWorldBuildings();
+  const M=W.map,r=rng(W.id*101+7);map=[];forestMask=[];HOUSES=[];DECOR=[];POI={};
+  const set=(x,y,t)=>{if(x>0&&y>0&&x<MW-1&&y<MH-1)map[y][x]=t};
+  const blob=(cx,cy,rx,ry,amp,seed,fn)=>{for(let y=Math.max(0,Math.floor(cy-ry*1.5));y<=Math.min(MH-1,Math.ceil(cy+ry*1.5));y++)for(let x=Math.max(0,Math.floor(cx-rx*1.5));x<=Math.min(MW-1,Math.ceil(cx+rx*1.5));x++){const a=(x+.5-cx)/rx,b=(y+.5-cy)/ry,d=Math.sqrt(a*a+b*b),n=(fbm(x*.18,y*.18,seed)-.5)*amp*2;if(d<1+n)fn(x,y)}};
+  const road=(pts,rad,t)=>{for(let i=0;i<pts.length-1;i++){const[a,b]=[pts[i],pts[i+1]];const L=Math.hypot(b[0]-a[0],b[1]-a[1])||1;for(let s=0;s<=L;s+=.25){const px=a[0]+(b[0]-a[0])*s/L,py=a[1]+(b[1]-a[1])*s/L;for(let y=Math.floor(py-rad);y<=Math.ceil(py+rad);y++)for(let x=Math.floor(px-rad);x<=Math.ceil(px+rad);x++){if(Math.hypot(x+.5-px,y+.5-py)>rad+.3)continue;const c=map[y]&&map[y][x];if(c===undefined)continue;if(c===WATER&&t!==WATER)set(x,y,BRIDGE);else if(c!==BRIDGE&&c!==HOUSE)set(x,y,t)}}}};
+  const edgeT=M.edge||TREE;
+  for(let y=0;y<MH;y++){const row=[],fm=[];for(let x=0;x<MW;x++){const nx=(x+.5-40)/40,ny=(y+.5-30)/30,rr=Math.pow(Math.pow(Math.abs(nx),3)+Math.pow(Math.abs(ny),3),1/3),thr=.9+(fbm(x*.12,y*.12,W.id+3)-.5)*.32;
+    let t;if(rr>thr)t=typeof edgeT==='function'?edgeT(x,y):edgeT;else{t=M.base||GRASS;const v=r();let acc=0;for(const[tt,p]of(M.sprinkle||[])){acc+=p;if(v<acc){t=tt;break}}}row.push(t);fm.push(0)}map.push(row);forestMask.push(fm)}
+  const ops={set,blob,road,r,
+    fill:(cx,cy,rx,ry,t,amp=.3,seed=1,keep)=>blob(cx,cy,rx,ry,amp,seed,(x,y)=>{if(keep&&keep.includes(map[y][x]))return;set(x,y,typeof t==='function'?t(x,y):t)}),
+    forest:(cx,cy,rx,ry,p=.32,seed=5)=>blob(cx,cy,rx,ry,.4,seed,(x,y)=>{if([WATER,SAND,HOUSE,PATH].includes(map[y][x]))return;forestMask[y][x]=1;set(x,y,r()<p?TREE:DARK)}),
+    trees:(cx,cy,rx,ry,p=.3,seed=6,t=TREE)=>blob(cx,cy,rx,ry,.4,seed,(x,y)=>{if(map[y][x]===GRASS&&r()<p)set(x,y,t)}),
+    house:(kind,x0,y0,w,h)=>{HOUSES.push({kind,x0,y0,w,h});for(let y=y0;y<y0+h;y++)for(let x=x0;x<x0+w;x++)set(x,y,HOUSE)},
+    decor:(k,x,y,w=1,h=1)=>{DECOR.push({k,x,y,w,h});for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)set(xx,yy,HOUSE)},
+    poi:(k,x,y)=>{POI[k]={x:T(x),y:T(y),tx:x,ty:y}},
+    clear:(x,y,rad=1.5,t=GRASS)=>{for(let yy=Math.floor(y-rad);yy<=y+rad;yy++)for(let xx=Math.floor(x-rad);xx<=x+rad;xx++)if(Math.hypot(xx-x,yy-y)<=rad&&map[yy]&&SOLID.has(map[yy][xx])&&map[yy][xx]!==HOUSE)set(xx,yy,forestMask[yy]&&forestMask[yy][xx]?DARK:t)}};
+  W.gen(ops);
+  for(const k in POI)ops.clear(POI[k].tx,POI[k].ty,1.2,M.clearT||M.base||GRASS);
+  SPAWN={x:POI.start.x,y:POI.start.y};HOME=SPAWN;
+  const far={x:-99999,y:-99999};CAMP=CAR=WC=HB=DEN=TUS=TUB=BEACH=NESTC=CLEAR=SHORE=JUNC=HAMLET=far;POND={x:-999,y:-999};
+  COLLECT={wood:[],mush:[],scroll:[]};ROCKS=[];GATES={log:[],boulder:[],bridge:[]};DOME=null;
+  // reachability from start
+  const keys=Object.values(POI).map(p=>[p.tx,p.ty]);for(const z of(W.enemies||[]))keys.push([Math.round((z[2]+z[4])/2),Math.round((z[3]+z[5])/2)]);
+  const pass=(x,y)=>!SOLID.has(map[y][x]);
+  for(let it=0;it<5;it++){const sx=POI.start.tx,sy=POI.start.ty,seen=new Uint8Array(MW*MH),q=[[sx,sy]];seen[sy*MW+sx]=1;
+    while(q.length){const[x,y]=q.pop();for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(nx<1||ny<1||nx>=MW-1||ny>=MH-1||seen[ny*MW+nx]||!pass(nx,ny))continue;seen[ny*MW+nx]=1;q.push([nx,ny])}}
+    let fixed=0;for(const[kx,ky]of keys){if(seen[ky*MW+kx])continue;let best=null,bd=1e9;for(let y=1;y<MH-1;y++)for(let x=1;x<MW-1;x++)if(seen[y*MW+x]){const d=Math.hypot(x-kx,y-ky);if(d<bd){bd=d;best=[x,y]}}
+      if(!best)continue;const L=Math.ceil(bd*3);for(let s=0;s<=L;s++){const x=Math.round(kx+(best[0]-kx)*s/L),y=Math.round(ky+(best[1]-ky)*s/L);if(SOLID.has(map[y][x])&&map[y][x]!==HOUSE)map[y][x]=map[y][x]===WATER?BRIDGE:(M.clearT||M.base||GRASS)}fixed++}
+    if(!fixed)break}
+}
+
+/* ---------- enemies with levels ---------- */
+function lvScale(e,L){const t=ETYPES[e.type];e.lv=L;e.maxHp=e.hp=Math.round(t.hp*(1+.12*(L-1)));e.atk=Math.round(t.atk*(1+.11*(L-1)));e.def=Math.round((t.def||0)+L*.4);e.xp=Math.round(t.xp*(1+.22*(L-1)));if(t.boss)e.rec=L;return e}
+function spawnWorldEnemies(){const W=curW();enemies=[];const r=rng(W.id*31+5);
+  const okT=new Set([GRASS,FLOWER,DARK,PATH,SAND,CAVEF,NEST]);
+  for(const z of W.enemies){const[type,L,x0,y0,x1,y1,n,o]=z;ensureChar(type);let c=0,g=0;while(c<n&&g++<3000){const tx=x0+Math.floor(r()*(x1-x0+1)),ty=y0+Math.floor(r()*(y1-y0+1));if(!map[ty]||!okT.has(map[ty][tx]))continue;if(Math.hypot(T(tx)-SPAWN.x,T(ty)-SPAWN.y)<7*TS)continue;if(safeAt(T(tx),T(ty)))continue;
+      const e=lvScale(mkE(type,T(tx),T(ty)),L+Math.floor(r()*3));if(o&&o.night)e.cond=()=>isNight();if(o&&o.from!=null){const fr=o.from;e.cond=()=>wq().st>=fr}enemies.push(e);c++}}
+  for(const b of W.bosses){ensureChar(b.type);const p=POI[b.at];const e=lvScale(mkE(b.type,p.x,p.y),b.L);const sty=BOSS_STYLE[b.type]||['brawler',{}];BOSSDEF[b.type]=mkBossDef(sty[0],Math.round(e.atk*1.25),Object.assign({aggro:260},sty[1]));const si=W.steps.findIndex(s=>s.t==='boss'&&s.e===b.type);e.storyStep=si;e.cond=()=>!wq().bd[b.type]&&(si<0||wq().st>=si);enemies.push(e)}
+  for(const n of(W.npcs||[]))ensureChar(n.k);
+}
+function worldBossDone(e){const q=wq();q.bd[e.type]=true;save()}
+
+/* ---------- boss templates ---------- */
+function mkBossDef(style,d,o={}){const ag=o.aggro||300;
+  const brawlA={name:o.a||'Smūgių kruša',range:66,tele:.42,rec:.4,cd:1.25,combo:2,zone:e=>({k:'cone',x:e.x,y:e.y-4,a:angTo(e),r:80,w:.85,track:true}),fire:(e,z)=>{zoneHit(z,d);e.slash=.22;e.pose=.2;sfx('swing')}};
+  const jump={name:o.m||'Šuolio smūgis',range:340,tele:.85,cd:8.5,act:.55,rec:1,zone:e=>({k:'circle',x:P.x,y:P.y,r:o.mr||80,track:true}),
+    start:(e,z)=>{e.jf={x:e.x,y:e.y};e.jt={x:z.x,y:z.y};sfx('pole')},tick:(e,dt,p)=>{e.x=e.jf.x+(e.jt.x-e.jf.x)*p;e.y=e.jf.y+(e.jt.y-e.jf.y)*p;e.jh=Math.sin(p*Math.PI)*80},
+    end:(e,z)=>{e.jh=0;zoneHit(z,Math.round(d*1.5));shake=.3;sfx('thud');parts.push({ring:true,x:e.x,y:e.y,t:.35,l:.35,R:z.r});puff(e.x,e.y+6,14,['#c8b890','#e8dcb8','#f4f4f4'],160,.5,0,2)}};
+  const dash={name:o.a||'Žaibiškas puolimas',range:300,tele:.6,rec:.45,cd:2.2,act:.42,zone:e=>({k:'line',x:e.x,y:e.y,a:angTo(e),len:260,w:40,track:true}),
+    start:(e,z)=>{e.vx=Math.cos(z.a)*620;e.vy=Math.sin(z.a)*620;e.hitDone=false;sfx('pole')},tick:(e,dt)=>{moveEnt(e,e.vx*dt,e.vy*dt,e.r*.7);if(!e.hitDone&&Math.hypot(P.x-e.x,P.y-e.y)<e.r+18){e.hitDone=true;hitPlayer(d)}if(Math.random()<.5)puff(e.x,e.y,1,['#f4f4f4'],30,.3,0,2)}};
+  const spin={name:o.m||'Sūkurys',range:280,tele:1,cd:10,act:1.8,rec:1.5,dizzy:true,zone:e=>({k:'circle',x:e.x,y:e.y,r:o.mr||96,follow:true}),
+    start:e=>{e.spinT=0},tick:(e,dt)=>{const a=angTo(e);moveEnt(e,Math.cos(a)*e.spd*.75*dt,Math.sin(a)*e.spd*.75*dt,e.r*.8);e.zone.x=e.x;e.zone.y=e.y;e.spinT-=dt;if(e.spinT<=0){e.spinT=.3;zoneHit(e.zone,Math.round(d*.65));sfx('swing')}}};
+  const shoot={name:o.a||'Šūviai',range:340,tele:.5,rec:.5,cd:1.9,zone:null,fire:e=>{const a=angTo(e);for(const s of[-.22,0,.22])shots.push({x:e.x,y:e.y-14,vx:Math.cos(a+s)*260,vy:Math.sin(a+s)*260,t:1.6,enemy:true,dmg:Math.round(d*.7),r:7});sfx('spit')}};
+  const rain={name:o.m||'Bombų lietus',range:380,tele:1,cd:9.5,rec:1.1,zone:null,fire:e=>{sfx('thud');shake=.25;for(let i=0;i<10;i++){const a=i/10*6.28+Math.random()*.4,rr=i<3?ri(0,25):ri(40,120);hazards.push({x:P.x+Math.cos(a)*rr,y:P.y+Math.sin(a)*rr*.8,t:.9+i*.08,dmg:Math.round(d*.9)})}}};
+  const beam={name:o.a||'Ki spindulys',range:380,tele:.7,rec:.5,cd:2.3,zone:e=>({k:'line',x:e.x,y:e.y,a:angTo(e),len:380,w:o.bw||34,track:true}),fire:(e,z)=>{zoneHit(z,d);sfx('kame');shake=Math.max(shake,.12);for(let i=0;i<10;i++)puff(e.x+Math.cos(z.a)*i*36,e.y-10+Math.sin(z.a)*i*36,1,[o.col||'#7cc8ff','#fff'],40,.4,0,3)}};
+  const nova={name:o.m||'Ki sprogimas',range:360,tele:1.1,cd:10,rec:1.2,zone:e=>({k:'circle',x:P.x,y:P.y,r:o.mr||110,track:true}),fire:(e,z)=>{zoneHit(z,Math.round(d*1.6));shake=.4;sfx('thud');parts.push({ring:true,x:z.x,y:z.y,t:.45,l:.45,R:z.r});puff(z.x,z.y,20,[o.col||'#7cc8ff','#fff','#feae34'],200,.6,0,3)}};
+  const base={move:o.fly?'fly':'walk',keep:o.keep||52,aggro:ag,leash:ag+180};
+  if(style==='brawler')return{...base,atk:brawlA,mega:jump};
+  if(style==='charger')return{...base,atk:brawlA,mega:spin};
+  if(style==='ninja')return{...base,atk:dash,mega:jump};
+  if(style==='gunner')return{...base,keep:150,atk:shoot,mega:rain};
+  if(style==='beam')return{...base,keep:120,atk:beam,mega:nova};
+  if(style==='giant')return{...base,atk:Object.assign({},brawlA,{zone:e=>({k:'cone',x:e.x,y:e.y-4,a:angTo(e),r:104,w:1.1,track:true}),tele:.6}),mega:rain};
+  return{...base,atk:brawlA,mega:jump}}
+
+/* ================= WORLDS: CHARACTERS & ENEMY TYPES ================= */
+function E2(k,base,o){ETYPES[k]=Object.assign({},ETYPES[base]||{},o)}
+// regular enemy bases (Lv1 values, scaled by lvScale)
+E2('coyote','wolf',{hp:60,atk:16,spd:92,xp:13});
+E2('sandsnake','snake',{hp:66,atk:19,xp:21});
+E2('vulture','bat',{hp:40,atk:14,xp:15});
+E2('bandit','wolf',{hp:90,atk:18,spd:84,xp:24,r:11,ai:'chase',def:2});
+E2('firelizard','wolf',{hp:80,atk:20,spd:88,xp:22,def:2});
+E2('firebat','bat',{hp:40,atk:16,xp:16});
+E2('trice','boar',{hp:150,atk:26,spd:66,xp:34,r:14,def:4});
+E2('pilafsoldier','wolf',{hp:70,atk:16,spd:72,xp:24,ai:'shooter',def:1});
+E2('raptor','wolf',{hp:96,atk:21,spd:98,xp:26,r:12,def:2});
+E2('robber','wolf',{hp:70,atk:16,spd:72,xp:24,ai:'shooter',def:1});
+E2('thug','wolf',{hp:90,atk:19,spd:86,xp:24,def:2});
+E2('fighterA','wolf',{hp:110,atk:22,spd:90,xp:28,def:3});
+E2('fighterB','wolf',{hp:120,atk:23,spd:86,xp:30,def:4});
+E2('snowwolf','wolf',{hp:70,atk:18,spd:96,xp:16,def:2});
+E2('yeti','boar',{hp:170,atk:28,spd:64,xp:36,r:15,def:5});
+E2('rrsoldier','wolf',{hp:70,atk:16,spd:72,xp:24,ai:'shooter',def:1});
+E2('ninja','wolf',{hp:85,atk:21,spd:112,xp:26,def:2});
+E2('crab','boar',{hp:120,atk:20,spd:58,xp:24,r:12,def:7});
+E2('panther','tiger',{hp:120,atk:24,spd:96,xp:30,def:3});
+E2('rrelite','wolf',{hp:90,atk:19,spd:76,xp:30,ai:'shooter',def:3});
+E2('ghost','bat',{hp:48,atk:18,xp:20});
+E2('mummyM','wolf',{hp:120,atk:20,spd:60,xp:28,def:5});
+E2('scorp','snake',{hp:70,atk:20,xp:22});
+E2('crane','wolf',{hp:110,atk:22,spd:94,xp:30,def:3});
+E2('demon','wolf',{hp:100,atk:24,spd:96,xp:30,def:3});
+E2('pterod','bat',{hp:60,atk:20,xp:24});
+E2('kingsoldier','wolf',{hp:80,atk:18,spd:74,xp:26,ai:'shooter',def:3});
+// bosses (Lv1 base; scaled)
+const BOSSB=(k,hp,atk,spd,xp,r)=>{ETYPES[k]={hp,atk,spd,xp,r:r||18,ai:'chase',boss:true,def:0,rec:1}};
+[['oolong',260,22,70,110,20],['yamcha',230,24,96,130,16],['trex',300,26,74,140,24],['oxking',320,28,66,160,22],['shu',240,25,100,170,16],['pilafmech',330,28,60,190,24],
+ ['lunchB',260,26,80,200,16],['saber',300,28,92,220,20],['bacterian',300,26,70,230,20],['giran',320,28,72,250,22],['nam',300,29,84,260,18],['jackie',320,30,92,300,16],
+ ['silver',300,28,80,300,18],['murasaki',290,29,108,320,16],['buyon',380,30,58,340,24],['white',340,30,74,360,18],['piratebot',380,31,62,380,24],['blue',330,31,98,400,18],['taopaipai',350,32,100,430,18],['blackmech',420,33,60,460,26],
+ ['fangs',340,32,104,470,18],['seethrough',320,32,100,480,18],['mummy',420,33,58,490,22],['akkuman',360,33,90,500,18],['gohanmask',380,34,96,520,18],
+ ['chiaotzu',330,32,100,540,14],['taocyborg',380,34,96,560,18],['tien',400,35,100,600,18],['tambourine',380,35,104,620,18],['cymbal',400,36,92,640,20],['drum',460,37,62,660,24],['kingpiccolo',480,38,90,720,20],
+ ['chichiT',380,36,100,700,16],['shen',420,38,104,760,18],['piccolojr',500,40,96,820,20]].forEach(a=>BOSSB(...a));
+const BOSS_STYLE={oolong:['giant',{m:'Transformacija: raketa',a:'Monstro letena'}],yamcha:['ninja',{a:'Vilko iltys'}],trex:['charger',{a:'Dantų kirtis',m:'Uodegos sūkurys'}],oxking:['giant',{a:'Kirvio kirtis',m:'Kirvių lietus'}],shu:['ninja',{a:'Šuns kardas'}],pilafmech:['gunner',{a:'Mecho raketos',m:'Pilafo bombos'}],
+ lunchB:['gunner',{a:'Kulkosvaidis',m:'Granatos'}],saber:['charger',{a:'Iltys',m:'Siautulys'}],bacterian:['brawler',{a:'Smirdantis smūgis',m:'Pilvo šuolis'}],giran:['gunner',{a:'Guminė gumulėlė',m:'Uodegos audra'}],nam:['brawler',{a:'Dangaus kirtis',m:'Kryžminis šuolis'}],jackie:['beam',{a:'Kamehameha',m:'Girtas kumštis'}],
+ silver:['brawler',{a:'Pulkininko smūgis'}],murasaki:['ninja',{a:'Šešėlių peiliai'}],buyon:['charger',{a:'Želė smūgis',m:'Želė sūkurys'}],white:['gunner',{a:'Generolo šūviai',m:'Bokšto spąstai'}],piratebot:['gunner',{a:'Piratų patranka',m:'Torpedos'}],blue:['ninja',{a:'Psichinis smūgis'}],taopaipai:['beam',{a:'Dodonpa',m:'Kolonos skrydis',col:'#feae34'}],blackmech:['gunner',{a:'Mecho raketos',m:'Bombardavimas'}],
+ fangs:['ninja',{a:'Vampyro kandis'}],seethrough:['ninja',{a:'Nematomas smūgis'}],mummy:['giant',{a:'Tvarsčių botagas',m:'Smėlio audra'}],akkuman:['beam',{a:'Akumaitas',m:'Velnio sprogimas',col:'#b55088'}],gohanmask:['brawler',{a:'Jan-Ken: Akmuo!',m:'Senelio šuolis'}],
+ chiaotzu:['beam',{a:'Dodonpa',m:'Telekinezė',col:'#feae34'}],taocyborg:['gunner',{a:'Rankos patranka',m:'Super Dodonpa'}],tien:['beam',{a:'Tri-spindulys',m:'Kikoho',col:'#feae34',mr:130}],tambourine:['ninja',{a:'Sparnų puolimas'}],cymbal:['charger',{a:'Pelekų kirtis',m:'Sūkurys'}],drum:['giant',{a:'Būgno smūgis',m:'Žemės drebėjimas'}],kingpiccolo:['beam',{a:'Demono spindulys',m:'Žemės sprogimas',col:'#b55088',mr:140}],
+ chichiT:['ninja',{a:'Kovinga Či-Či'}],shen:['brawler',{a:'Dievo delnas',m:'Sukimasis'}],piccolojr:['beam',{a:'Makankosappo',m:'Didysis sprogimas',col:'#d8f080',bw:26,mr:150}]};
+
+// characters (lazy)
+defHuman('elder','Kaimo seniūnas',42,{skin:'#e8b890',hair:'#e8e8e8',style:'bun',shirt:'#8a6a40',sleeve:'#8a6a40',longSleeve:true,pants:'#6a4a30',robe:true,slim:true});
+defHuman('aruF','Aru kaimietė',42,{skin:'#e0a878',hair:'#2a1a10',style:'ponytail',shirt:'#c84a3a',pants:'#e8d8b0',slim:true,shorts:false,acc:'#feae34'});
+defHuman('oolongP','Oolongas',30,{skin:'#f0a8b8',hair:'#f0a8b8',style:'none',shirt:'#3a7a3a',sleeve:'#3a7a3a',pants:'#3a7a3a',shoes:'#2a2a2a',blush:'#e08090'});
+defHuman('oolong','Oolongas (monstras)',70,{skin:'#8a96b0',hair:'#3a3a4a',style:'messy',shirt:'#4a5a3a',sleeve:'#4a5a3a',pants:'#4a5a3a',shoes:'#2a2a2a',belt:'#2a2a2a',eye:'#e43b44'});
+defHuman('yamcha','Yamcha',46,{skin:'#e8b088',hair:'#1a1a20',style:'long',shirt:'#3a8a4a',sleeve:'#3a8a4a',pants:'#e8a030',belt:'#e8d040',beltKnot:true});
+defHuman('bandit','Dykumos plėšikas',44,{skin:'#d8a070',hair:'#3a2a1a',style:'short',shirt:'#8a6a40',pants:'#5a4a3a',belt:'#3a2a1a'});
+defQuad('coyote','Kojotas',36,{body:'#c8a068',dark:'#a07a48',belly:'#ecd8b0',tail:5,tailTip:'#ecd8b0',eye:'#f8e040'});
+defVar('sandsnake','Smėlio gyvatė','snake','hue-rotate(-70deg) saturate(1.2) brightness(1.1)');
+defVar('vulture','Dykumos grifas','bat','hue-rotate(80deg) saturate(.6) brightness(1.2)',34);
+defHuman('chichi','Či-Či',40,{skin:'#f6cba4',hair:'#1a1a20',style:'bun',shirt:'#e85a90',sleeve:'#e85a90',pants:'#e85a90',shorts:true,slim:true,shoes:'#3a3a50',acc:'#a8b0c0',blush:'#f09080'});
+defHuman('oxking','Jaučių karalius',80,{skin:'#e8b090',hair:'#3a2a1a',style:'messy',shirt:'#5a4a6a',sleeve:'#5a4a6a',pants:'#5a4a6a',shoes:'#2a1a10',belt:'#c8a040',beltKnot:true});
+defQuad('trex','Tiranozauras',70,{body:'#5a9a4a',dark:'#3a7a34',belly:'#c8d890',tail:7,tailTip:'#3a7a34',eye:'#f8e040'});
+defQuad('firelizard','Ugnies driežas',32,{body:'#d8582a',dark:'#a03a18',belly:'#f8c060',stripes:'#5a1a0a',tail:6,tailTip:'#f88a20',eye:'#ffe060'});
+defVar('firebat','Ugnies šikšnosparnis','bat','hue-rotate(110deg) saturate(1.6)');
+defQuad('trice','Triceratopsas',46,{body:'#8a7a5a',dark:'#6a5a3a',belly:'#c8b890',tusk:true,mane:'#5a4a2a',tail:3,eye:'#f8e040'});
+defHuman('pilafsoldier','Pilafo sargybinis',44,{skin:'#e8b890',hair:'#5a6a8a',style:'short',shirt:'#4a5a8a',pants:'#4a5a8a',belt:'#2a2a3a'});
+defHuman('shu','Šu',42,{skin:'#d8b890',hair:'#d8b890',style:'none',shirt:'#3a3a6a',sleeve:'#3a3a6a',longSleeve:true,pants:'#3a3a6a',belt:'#e43b44',beltKnot:true});
+defHuman('mai','Mai',44,{skin:'#f2c8a8',hair:'#1a1a20',style:'short',shirt:'#3a4a3a',pants:'#3a4a3a',slim:true});
+defHuman('pilafmech','Pilafo mechas',78,{skin:'#8a9ab0',hair:'#3a7ad0',style:'none',shirt:'#5a6a8a',sleeve:'#8a9ab0',pants:'#5a6a8a',shoes:'#3a3a4a',belt:'#feae34',eye:'#e43b44'});
+defHuman('krillin','Krilinas',36,{skin:'#f2c08a',hair:'#f2c08a',style:'none',shirt:'#e87020',vneck:true,under:'#3050a0',sleeve:'#e87020',pants:'#e87020',belt:'#3050a0',beltKnot:true,cuff:'#3050a0',shoes:'#3a2a1a'});
+defHuman('lunchD','Lunch',42,{skin:'#f6cba4',hair:'#2a4ab0',style:'long',shirt:'#4a9a5a',pants:'#3a3a50',slim:true,blush:'#f09080'});
+defHuman('lunchB','Lunch (šviesiaplaukė)',44,{skin:'#f6cba4',hair:'#f0d040',style:'long',shirt:'#4a9a5a',pants:'#3a3a50',slim:true,eye:'#3a6a30'});
+defHuman('robber','Banko plėšikas',44,{skin:'#e0a878',hair:'#1a1a1a',style:'short',shirt:'#2a2a30',pants:'#3a3a40'});
+defQuad('raptor','Raptorius',36,{body:'#4a8a8a',dark:'#2e6a6a',belly:'#b8e0c8',stripes:'#1e4a4a',tail:6,eye:'#f8e040'});
+defQuad('saber','Kardadantis tigras',62,{body:'#c89a4a',dark:'#9a7030',belly:'#f0dcb0',stripes:'#5a3a1a',tail:5,tusk:true,eye:'#f04040'});
+defHuman('registrar','Turnyro teisėjas',44,{skin:'#e8b890',hair:'#f0d060',style:'short',shirt:'#2a2a40',sleeve:'#2a2a40',longSleeve:true,pants:'#2a2a40',vneck:true,under:'#f4f4f4'});
+defHuman('thug','Gatvės chuliganas',44,{skin:'#d8a070',hair:'#c83a3a',style:'messy',shirt:'#3a3a40',pants:'#3a5a8a'});
+defHuman('fighterA','Kovotojas',44,{skin:'#e8b890',hair:'#2a1a10',style:'short',shirt:'#f0ece0',sleeve:'#f0ece0',pants:'#f0ece0',belt:'#1a1a1a',beltKnot:true});
+defHuman('fighterB','Kovotojas',46,{skin:'#c89060',hair:'#1a1a1a',style:'spiky',shirt:'#3a6ad0',sleeve:'#3a6ad0',pants:'#2a3a6a',belt:'#feae34',beltKnot:true});
+defHuman('bacterian','Bakterianas',60,{skin:'#c89a70',hair:'#2a2a20',style:'short',shirt:'#e8e0c0',pants:'#5a4a3a',belt:'#3a2a1a'});
+defHuman('giran','Giranas',72,{skin:'#5aa848',hair:'#5aa848',style:'none',shirt:'#5aa848',sleeve:'#5aa848',pants:'#3a6a30',shoes:'#3a6a30',belt:'#c83a3a',eye:'#f8e040'});
+defHuman('nam','Namas',48,{skin:'#a8784a',hair:'#f0ece0',style:'none',shirt:'#f0ece0',pants:'#f0ece0',belt:'#c83a3a',beltKnot:true});
+defHuman('jackie','Jackie Chun',44,{skin:'#e8b890',hair:'#e0e0e0',style:'spiky',shirt:'#5a5a8a',sleeve:'#5a5a8a',pants:'#5a5a8a',belt:'#d8b860'});
+defHuman('silver','Pulkininkas Silveris',50,{skin:'#e8b890',hair:'#f0d060',style:'short',shirt:'#8a8a9a',sleeve:'#8a8a9a',longSleeve:true,pants:'#4a4a5a',belt:'#e43b44'});
+defHuman('rrsoldier','Raudonojo kaspino kareivis',44,{skin:'#e8b890',hair:'#3a2a1a',style:'short',shirt:'#5a6a8a',pants:'#3a4a6a',belt:'#e43b44'});
+defHuman('rrelite','Raudonojo kaspino elitas',46,{skin:'#e0a878',hair:'#1a1a1a',style:'short',shirt:'#a82830',pants:'#3a3a4a',belt:'#feae34'});
+defVar('snowwolf','Sniego vilkas','wolf','brightness(1.5) saturate(.3) hue-rotate(180deg)');
+defQuad('yeti','Sniego žvėris',58,{body:'#e8eef4',dark:'#b8c4d0',belly:'#ffffff',mane:'#c8d4e0',tusk:true,tail:2,eye:'#3a6ad0'});
+defHuman('suno','Sunė',38,{skin:'#f6cba4',hair:'#e8c060',style:'ponytail',shirt:'#d84040',sleeve:'#d84040',longSleeve:true,pants:'#5a3a2a',slim:true,acc:'#f4f4f4'});
+defHuman('android8','Androidas 8',76,{skin:'#c8a888',hair:'#c8a888',style:'none',shirt:'#4a6a9a',sleeve:'#4a6a9a',pants:'#3a4a6a',belt:'#e43b44'});
+defHuman('murasaki','Ninja Murasaki',44,{skin:'#e8b890',hair:'#6a3a9a',style:'none',shirt:'#6a3a9a',sleeve:'#6a3a9a',longSleeve:true,pants:'#6a3a9a',belt:'#e43b44',beltKnot:true});
+defHuman('ninja','Ninja',42,{skin:'#e8b890',hair:'#2a2a3a',style:'none',shirt:'#2a2a3a',sleeve:'#2a2a3a',longSleeve:true,pants:'#2a2a3a',belt:'#6a3a9a'});
+defQuad('buyon','Bujonas',64,{body:'#d06090',dark:'#a03a68',belly:'#f0a0c0',tail:2,eye:'#f8e040'});
+defHuman('white','Generolas Vaitas',52,{skin:'#e8b890',hair:'#5a4a3a',style:'short',shirt:'#e8e8f0',sleeve:'#e8e8f0',longSleeve:true,pants:'#3a3a4a',belt:'#e43b44'});
+defHuman('blue','Generolas Mėlynasis',50,{skin:'#f2c8a8',hair:'#f0d060',style:'short',shirt:'#3a5aa0',sleeve:'#3a5aa0',longSleeve:true,pants:'#2a3a6a',belt:'#e43b44'});
+defHuman('piratebot','Piratų robotas',76,{skin:'#7a8a7a',hair:'#3a3a3a',style:'none',shirt:'#5a5a4a',sleeve:'#7a8a7a',pants:'#4a4a3a',shoes:'#2a2a2a',eye:'#e43b44',belt:'#feae34'});
+defQuad('crab','Urvų krabas',34,{body:'#c83a3a',dark:'#8a1e1e',belly:'#f0a080',tail:1,eye:'#f8f8f8'});
+defQuad('panther','Juodoji pantera',38,{body:'#2a2a34',dark:'#1a1a22',belly:'#4a4a58',tail:6,eye:'#f8e040'});
+defHuman('taopaipai','Tao Pai Pai',48,{skin:'#e8b890',hair:'#2a1a10',style:'bun',shirt:'#e8a8c0',sleeve:'#e8a8c0',pants:'#e8a8c0',belt:'#3a2a3a'});
+defHuman('karin','Karinas',34,{skin:'#f0f0f0',hair:'#f0f0f0',style:'none',shirt:'#f0f0f0',pants:'#f0f0f0',slim:true,eye:'#3a3a3a'});
+defHuman('upa','Upa',36,{skin:'#c08050',hair:'#2a1a10',style:'ponytail',shirt:'#c08050',pants:'#e8d8b0',acc:'#e43b44'});
+defHuman('blackmech','Juodojo robotas',80,{skin:'#3a3a40',hair:'#3a3a40',style:'none',shirt:'#2a2a30',sleeve:'#3a3a40',pants:'#2a2a30',shoes:'#1a1a1a',eye:'#e43b44',belt:'#e43b44'});
+defHuman('baba','Būrėja Baba',32,{skin:'#e8c0a0',hair:'#5a3a8a',style:'none',shirt:'#5a3a8a',sleeve:'#5a3a8a',longSleeve:true,pants:'#5a3a8a',robe:true,slim:true});
+defHuman('fangs','Drakula',46,{skin:'#c0c8d8',hair:'#1a1a20',style:'short',shirt:'#2a1a2a',sleeve:'#2a1a2a',longSleeve:true,pants:'#2a1a2a',belt:'#a82830',eye:'#e43b44'});
+defHuman('seethrough','Nematomasis',46,{skin:'#d8e4f0',hair:'#d8e4f0',style:'none',shirt:'#e0e8f0',pants:'#e0e8f0',shoes:'#c0c8d0'});
+defHuman('mummy','Mumija',70,{skin:'#e8e0c8',hair:'#e8e0c8',style:'none',shirt:'#e8e0c8',sleeve:'#d8d0b8',pants:'#d8d0b8',shoes:'#c8c0a8',eye:'#e43b44'});
+defHuman('akkuman','Velnias Akumanas',48,{skin:'#8a8aa0',hair:'#8a8aa0',style:'none',shirt:'#2a2a3a',sleeve:'#8a8aa0',pants:'#2a2a3a',belt:'#b55088',eye:'#f8e040'});
+defHuman('gohanmask','Kaukėtas kovotojas',46,{skin:'#e8b890',hair:'#d8d8d8',style:'short',shirt:'#5a8a4a',sleeve:'#5a8a4a',pants:'#5a8a4a',belt:'#3a2a1a',beltKnot:true});
+defVar('ghost','Vaiduoklis','bat','brightness(1.8) saturate(.2)');
+defHuman('mummyM','Mumijos tarnas',44,{skin:'#e0d8c0',hair:'#e0d8c0',style:'none',shirt:'#e0d8c0',pants:'#d0c8b0',shoes:'#c0b8a0',eye:'#e43b44'});
+defVar('scorp','Dykumos skorpionas','snake','hue-rotate(-110deg) saturate(1.4)');
+defHuman('tien','Tienas',50,{skin:'#e8b890',hair:'#e8b890',style:'none',shirt:'#3a7a4a',sleeve:'#e8e0c8',pants:'#e8e0c8',belt:'#3a2a1a',beltKnot:true});
+defHuman('chiaotzu','Čiaozu',32,{skin:'#f6ece8',hair:'#f6ece8',style:'none',shirt:'#e85050',sleeve:'#e85050',longSleeve:true,pants:'#3a6ad0',blush:'#f08080'});
+defHuman('taocyborg','Tao Pai Pai (kiborgas)',50,{skin:'#c8b8a8',hair:'#2a1a10',style:'bun',shirt:'#e8a8c0',sleeve:'#8a9ab0',pants:'#e8a8c0',eye:'#e43b44'});
+defHuman('crane','Gervės mokinys',44,{skin:'#e8b890',hair:'#2a1a10',style:'short',shirt:'#f0ece0',pants:'#3a7a4a',belt:'#3a2a1a'});
+defHuman('tambourine','Tamburinas',50,{skin:'#5aa848',hair:'#5aa848',style:'none',shirt:'#3a3a3a',sleeve:'#5aa848',pants:'#3a3a3a',eye:'#e43b44'});
+defHuman('cymbal','Cimbolas',54,{skin:'#4a9a6a',hair:'#4a9a6a',style:'none',shirt:'#4a3a7a',sleeve:'#4a9a6a',pants:'#4a3a7a',eye:'#e43b44'});
+defHuman('drum','Būgnas',78,{skin:'#5aa848',hair:'#5aa848',style:'none',shirt:'#5a3a2a',sleeve:'#5aa848',pants:'#5a3a2a',eye:'#e43b44'});
+defHuman('kingpiccolo','Karalius Piccolo',60,{skin:'#5aa848',hair:'#5aa848',style:'none',shirt:'#6a3a9a',sleeve:'#5aa848',pants:'#6a3a9a',robe:true,belt:'#e8e8f0',eye:'#e43b44'});
+defHuman('demon','Demonų pakalikas',44,{skin:'#4a9a4a',hair:'#4a9a4a',style:'none',shirt:'#2a2a2a',sleeve:'#4a9a4a',pants:'#2a2a2a',eye:'#e43b44'});
+defVar('pterod','Demonų paukštis','ptero','hue-rotate(100deg) saturate(1.3)',60);
+defHuman('kingsoldier','Karaliaus kareivis',44,{skin:'#e8b890',hair:'#5a5a6a',style:'short',shirt:'#6a6a7a',pants:'#4a4a5a',belt:'#feae34'});
+defHuman('chichiT','Či-Či (turnyre)',46,{skin:'#f6cba4',hair:'#1a1a20',style:'bun',shirt:'#8a3ad0',sleeve:'#8a3ad0',pants:'#8a3ad0',slim:true,blush:'#f09080'});
+defHuman('shen','Šenas',46,{skin:'#f2c08a',hair:'#2a2a20',style:'short',shirt:'#e8e8f0',sleeve:'#e8e8f0',pants:'#e8e8f0',belt:'#3a3a4a'});
+defHuman('piccolojr','Piccolo Jaunesnysis',60,{skin:'#5aa848',hair:'#e8e8f0',style:'none',shirt:'#6a3a9a',sleeve:'#5aa848',pants:'#6a3a9a',robe:true,belt:'#3a8ad0',eye:'#201820'});
+defHuman('yajirobe','Jadžirobė',42,{skin:'#e8b890',hair:'#1a1a1a',style:'messy',shirt:'#5a7a5a',pants:'#5a5a6a',belt:'#feae34'});
+defHuman('kami','Dievas (Kamis)',52,{skin:'#5aa848',hair:'#e8e8f0',style:'none',shirt:'#f0ece0',sleeve:'#f0ece0',longSleeve:true,pants:'#f0ece0',robe:true,belt:'#3a8ad0'});
+defHuman('villM','Miestietis',42,{skin:'#e8b890',hair:'#5a3a2a',style:'short',shirt:'#3a8ad0',pants:'#5a5a6a'});
+defHuman('villF','Miestietė',42,{skin:'#f2c8a8',hair:'#a8582a',style:'ponytail',shirt:'#e86a8a',pants:'#3a3a50',slim:true});
+
+/* ================= WORLDS: DATA (2–6) ================= */
+const WORLDS=[null,{id:1,name:'Paozu kalnas',sub:'Mangos 1–4 sk.',lvl:[1,10],pos:[.18,.42]}];
+const SP=(k)=>k; // speaker helper
+WORLDS[2]={id:2,name:'Oolongas ir Diablo dykuma',sub:'Mangos 5–12 sk.',lvl:[10,16],biome:'steppe',pos:[.34,.30],
+  map:{base:GRASS,edge:(x,y)=>x>44?ROCK:TREE,sprinkle:[[TREE,.025],[FLOWER,.015]]},
+  gen(o){const{fill,trees,house,decor,poi,road}=o;
+    fill(57,39,23,17,SAND,.35,3);
+    fill(66,22,4.5,3.5,ROCK,.3,4);fill(50,49,4,3,ROCK,.3,5);fill(74,49,3.5,4,ROCK,.3,6);fill(44,30,2.5,2,ROCK,.3,7);
+    fill(59,33,3.6,2.6,WATER,.25,8);trees(59,33,6.5,5,.18,9);
+    fill(70,41,5.5,4.5,ROCK,.25,10);fill(70,41,3.4,2.5,CAVEF,.2,11);
+    fill(22,21,11,8,GRASS,.25,12);
+    house('adobe',15,14,5,4);house('adobe2',24,13,5,4);house('adobe',17,24,5,4);house('adobe2',27,22,5,4);
+    decor('well',22,19,2,2);decor('barrel',21,17);decor('hay',30,19);
+    house('mansion',34,5,6,4);decor('statue',32,8);decor('statue',41,8);
+    for(const[x,y]of[[48,40],[52,33],[63,46],[56,52],[68,30],[47,46],[62,26]])decor('cactus',x,y);
+    road([[6,33],[14,29],[21,23]],1.1,PATH);road([[22,21],[28,16],[37,10]],1,PATH);road([[22,23],[32,29],[45,35]],1.1,PATH);road([[45,35],[58,38],[66,41],[69,41]],1,SAND);road([[64,41],[70,41]],.9,CAVEF);
+    poi('start',6,33);poi('aru',22,23);poi('mansion',37,11);poi('desert',47,36);poi('oasis',59,37);poi('hideout',70,41)},
+  enemies:[['coyote',10,8,26,30,42,8],['vulture',11,30,18,50,40,5],['coyote',13,26,4,48,16,5],['sandsnake',12,44,28,78,56,8],['bandit',13,58,34,77,52,6]],
+  bosses:[{type:'oolong',at:'mansion',L:12},{type:'yamcha',at:'hideout',L:15}],
+  safe:[[22,21,9]],
+  gates:[{r:[28,0,47,15],until:3,msg:'Kelią į dvarą užstoja kojotų gauja. Pirma išvaikyk juos.'},{r:[45,22,79,59],until:5,msg:'Dykuma dar per pavojinga – pirma reikalai kaime.'}],
+  npcs:[{id:'elder',k:'elder',name:'Seniūnas',at:[20,19],r:0,spd:0,lines:['Ačiū tau, vaikeli. Aru kaimas tavęs nepamirš.']},
+    {id:'bulma2',k:'bulma',name:'Bulma',at:[24,24],r:1.5,spd:30,lines:['Radaras rodo rutulį rytuose – Diablo dykumoje!','Vėl smėlis batuose... Kodėl visi rutuliai tokiose vietose?']},
+    {id:'aru1',k:'aruF',name:'Kaimietė',at:[19,22],r:2,spd:30,day:true,lines:['Oolongas pagrobė jau tris merginas!','Jis gali pavirsti bet kuo – net monstru!']},
+    {id:'aru2',k:'kid1',name:'Berniukas',at:[25,20],r:3,spd:80,day:true,kid:true,lines:['Tu tikrai nugalėsi Oolongą?','Mano sesuo bijo išeiti iš namų...']},
+    {id:'oolongP',k:'oolongP',name:'Oolongas',at:[36,13],r:1,spd:30,from:4,lines:['Ko spoksai? Niekada nematei kalbančios kiaulės?','Penkios minutės – tiek aš galiu išbūti kitu pavidalu.']}],
+  loot:[[74,32],[10,8]],herbs:6,
+  intro:[['Pasakotojas','Kinto debesėlis nuskraidino Goku ir Bulmą į sausą stepę. Toli rytuose mirguliuoja Diablo dykuma.'],[BU(),'Radaras rodo kitą rutulį... bet pirma – štai kaimas. Gal ten gausim vandens?']],
+  steps:[
+    {t:'go',p:'aru',txt:'Nueik į Aru kaimą',dlg:[['Pasakotojas','Aru kaime tylu. Langai uždaryti, gatvėse – nė gyvos dvasios.'],['Kaimietė','Ar tu... ne Oolongas? Uf. Eik pas seniūną, jis viską papasakos.']]},
+    {t:'talk',n:'elder',txt:'Pakalbink kaimo seniūną',dlg:[['Seniūnas','Pabaisa vardu Oolongas grobia mūsų merginas. Jis keičia pavidalus – kartais jis didžiulis monstras!'],[BU(),'Goku, tu juk stiprus. Padėk jiems – o mainais gausim maisto ir vandens.'],[G(),'Gerai! O ar tas Oolongas skanus?'],['Seniūnas','Jo dvaras šiaurėje. Bet kelią saugo kojotų gauja...']]},
+    {t:'kill',e:'coyote',n:6,txt:'Išvaikyk kojotus nuo kelio į dvarą',dlg:[[G(),'Kelias laisvas! Dabar – pas tą Oolongą.']]},
+    {t:'boss',e:'oolong',txt:'Įveik Oolongą prie jo dvaro (šiaurė)',dlg:[['Pasakotojas','PUF! Baisusis monstras pavirto... mažyte kiaule su kariška uniforma.'],[G(),'Kiaulė?! Tai tu ir esi Oolongas?'],['Oolongas','Ei ei, ramiai! Aš tik... skolinausi tas merginas. Jos visos vis tiek norėjo namo!']]},
+    {t:'talk',n:'oolongP',txt:'Pasikalbėk su Oolongu',dlg:[['Oolongas','Gerai, gerai, merginos jau grįžo namo. Ko dar norit?'],[BU(),'Tu keliausi su mumis. Jei bandysi pabėgti – štai tavo vaistas nuo viduriavimo... tiksliau, pats viduriavimas!'],['Oolongas','Ne-e-e! Tik ne tas!'],[BU(),'Radaras rodo rytus. Diablo dykuma. Eime!']]},
+    {t:'go',p:'desert',txt:'Sek radarą į Diablo dykumą',dlg:[['Pasakotojas','Smėlis kaitina padus. Iš po akmenų šnypščia gyvatės.'],['Oolongas','Čia gyvena dykumos plėšikas Yamcha... Sako, jis negailestingas!']]},
+    {t:'kill',e:'sandsnake',n:5,txt:'Išvalyk kelią nuo smėlio gyvačių',dlg:[[G(),'Kažkas mus seka... Jaučiu!']]},
+    {t:'boss',e:'yamcha',txt:'Dykumos plėšikas Yamcha tyko prie urvo!',pre:[['Yamcha','Nuo šiol jūsų kapsulės ir pinigai – mano! Vilko iltys!']],dlg:[['Yamcha','Tu stiprus, vaike... bet... ten... MERGINA?!'],['Pasakotojas','Yamcha išraudo kaip pomidoras ir pasprukęs dingo dulkėse kartu su skraidančiu katinu Puaru.'],[BU(),'Keistas tipas. Bet gražus...']]},
+    {t:'take',p:'oasis',txt:'Paimk drakono rutulį prie oazės',dlg:[['Pasakotojas','Oazės smėlyje blizga oranžinis rutulys su penkiomis žvaigždutėmis!'],[BU(),'Penki! Liko visai nedaug. Kitas – kalnuose į pietus... Ten, sako, dega ugnies kalnas.']]}
+  ],
+  outro:[[G(),'Ugnies kalnas? Skamba šiltai!'],['Pasakotojas','2 skyrius įveiktas! Kinto debesėlis nuskraidins tave toliau, kai būsi pasiruošęs.']]};
+
+WORLDS[3]={id:3,name:'Ugnies kalnas ir Pilafo pilis',sub:'Mangos 13–23 sk.',lvl:[16,22],biome:'volcano',pos:[.52,.22],
+  map:{base:GRASS,edge:ROCK,sprinkle:[[TREE,.03]]},
+  gen(o){const{fill,forest,house,decor,poi,road,trees}=o;
+    fill(40,14,15,10,ROCK,.3,3);fill(40,13,8,4.5,NEST,.2,4);
+    road([[28,0],[31,8],[27,16],[29,24],[24,34],[26,44],[22,59]],.9,WATER);road([[60,0],[56,10],[52,20]],.8,WATER);
+    forest(17,45,11,9,.3,5);
+    fill(65,43,11,9,SAND,.25,6);house('pilafcastle',60,34,7,4);decor('statue',58,40);decor('statue',68,40);decor('crate',62,46);decor('crate',63,46);
+    house('oxcastle',36,8,7,4);
+    road([[6,52],[14,48],[18,44]],1,PATH);road([[18,44],[24,36],[30,31],[38,28],[40,22],[40,13]],1,PATH);road([[38,28],[50,30],[58,38],[63,39]],1,PATH);road([[63,39],[64,44]],1,SAND);
+    trees(50,48,8,6,.12,7);
+    poi('start',6,52);poi('chichi',18,44);poi('foot',30,31);poi('gate',40,24);poi('castle',39,13);poi('pilaf',63,39);poi('plaza',65,45)},
+  enemies:[['trice',16,6,34,26,58,4],['firelizard',17,28,18,54,32,10],['firebat',18,26,6,56,34,6,{night:true}],['firelizard',19,44,44,58,58,5],['pilafsoldier',20,54,32,78,56,9]],
+  bosses:[{type:'trex',at:'chichi',L:17},{type:'oxking',at:'castle',L:19},{type:'shu',at:'plaza',L:21},{type:'pilafmech',at:'pilaf',L:22}],
+  safe:[[30,31,5]],
+  gates:[{r:[28,0,54,26],until:4,msg:'Ugnies kalno takas per karštas. Pirma pasitark su meistru Roshi papėdėje.'},{r:[54,30,79,59],until:7,msg:'Ten kažkokia keista pilis... Pirma reikia užgesinti kalną.'}],
+  npcs:[{id:'chichi',k:'chichi',name:'Či-Či',at:[20,43],r:1,spd:30,from:2,lines:['Tėtis – Jaučių karalius – tikrai nėra blogas!','Kai užaugsi... ar tu mane vesi? Pažadėjai!']},
+    {id:'roshi',k:'roshi',name:'Meistras Roshi',at:[31,30],r:0,spd:0,from:3,to:6,lines:['Bašo vėduoklės nebėra... Teks kitaip.','Ugnis nemėgsta skubančiųjų.']},
+    {id:'roshi2',k:'roshi',name:'Meistras Roshi',at:[41,15],r:0,spd:0,from:6,lines:['Ech, per daug jėgos įdėjau... Pilis irgi nugriuvo.','Kamehameha – ne žaislas, vaike.']},
+    {id:'bulma3',k:'bulma',name:'Bulma',at:[29,32],r:1.5,spd:30,lines:['Mano šukuosena! Pelenai visur!','Rutulys tikrai tame degančiame kalne...']},
+    {id:'oolong3',k:'oolongP',name:'Oolongas',at:[32,33],r:1.5,spd:30,lines:['Aš toliau neisiu. Ten karšta ir pavojinga!']}],
+  loot:[[50,50],[10,30]],herbs:6,
+  intro:[['Pasakotojas','Kinto nusileido prie ugnies kalno. Danguje sukasi juodi dūmai, oras kvepia siera.'],[BU(),'Radaras rodo rutulį... tiesiai tame degančiame kalne!'],['Pasakotojas','Staiga iš miško pasigirsta mergaitės klyksmas!']],
+  steps:[
+    {t:'go',p:'chichi',txt:'Kažkas šaukiasi pagalbos miške pietvakariuose',dlg:[['Mergaitė','Gelbėkit! Tas driežas mane nori suėsti!']]},
+    {t:'boss',e:'trex',txt:'Išgelbėk mergaitę nuo tiranozauro',dlg:[['Pasakotojas','Tiranozauras su riaumojimu pabėgo į mišką.'],['Či-Či','Ačiū! Aš – Či-Či, Jaučių karaliaus dukra.']]},
+    {t:'talk',n:'chichi',txt:'Pasikalbėk su Či-Či',dlg:[['Či-Či','Mūsų pilis ant kalno dega jau daug metų. Tėtis negali grįžti namo...'],['Či-Či','Tik meistras Roshi ir jo stebuklinga vėduoklė gali užgesinti ugnį!'],[G(),'Roshi? Pažįstu! Jis dabar kalno papėdėje – atvyko ant vėžlio.']]},
+    {t:'talk',n:'roshi',txt:'Pasikalbėk su meistru Roshi kalno papėdėje',dlg:[[RS(),'Bašo vėduoklę... ehe... netyčia išmečiau kartu su šiukšlėmis.'],[RS(),'Nieko, užgesinsiu kitaip. Bet viršuje siautėja Jaučių karalius – jis nieko neprisileidžia.'],[G(),'Tada aš pirmas! Laikykitės!']]},
+    {t:'kill',e:'firelizard',n:6,txt:'Prasiveržk pro ugnies driežus kalno taku',dlg:[[G(),'Karšta! Bet pilis jau visai netoli.']]},
+    {t:'boss',e:'oxking',txt:'Sustabdyk įsiutusį Jaučių karalių prie pilies',pre:[['Jaučių karalius','Kas drįsta artintis prie mano pilies?! Kirviai – pirmyn!']],dlg:[['Jaučių karalius','Palauk... Ta lazda... Tu – Gohano anūkas?! Atleisk, vaike!'],['Jaučių karalius','Gohanas buvo mano draugas. Mes abu mokėmės pas meistrą Roshi.']]},
+    {t:'talk',n:'roshi2',txt:'Meistras Roshi atėjo prie pilies – pasikalbėk',dlg:[[RS(),'Atsitraukit. Ka... me... ha... me... HA!'],['Pasakotojas','Akinanti banga nušlavė liepsnas – ir pusę kalno kartu su pilimi.'],[G(),'Oho! Aš irgi taip noriu! Ka... me... ha... me... HA!'],['Pasakotojas','Iš Goku delnų išsiveržė mažas, bet tikras ki spindulys! Išmokai KAMEHAMEHA – naujas mygtukas KAME.'],[RS(),'(Iš pirmo karto?! Man prireikė penkiasdešimties metų...)']],on:()=>{Q.kame=true;save()}},
+    {t:'go',p:'pilaf',txt:'Radaras rodo pilį rytuose',dlg:[['Pasakotojas','Prie pilies vartų kabo užrašas: „Pilafo valdos. Pašaliniams – mirtis.“'],['Pilafas (balsas)','Cha cha! Drakono rutuliai bus mano! Sargybiniai – sulaikyti juos!']]},
+    {t:'kill',e:'pilafsoldier',n:6,txt:'Įveik Pilafo sargybinius',dlg:[['Mai','Šu, tavo eilė!'],['Šu','Kodėl visada aš...']]},
+    {t:'boss',e:'shu',txt:'Įveik Šu, Pilafo kardininką',dlg:[['Šu','Au au... Imperatoriau, aš pralaimėjau!'],['Pilafas (balsas)','Nenaudėliai! Tada mano mechas pats jus sutraiškys!']]},
+    {t:'boss',e:'pilafmech',txt:'Sunaikink Pilafo mechą',dlg:[['Pasakotojas','Mechas sprogo, o Pilafas su pakalikais spruko į bokštą su visais rutuliais...'],['Pasakotojas','Tą naktį buvo pilnatis. Goku pažvelgė į mėnulį... ir pavirto milžiniška beždžione – Oozaru!'],['Pasakotojas','Kai Yamcha nukirpo uodegą, Goku atsibudo nuogas ir nieko neprisiminė. O Oolongas spėjo paprašyti drakono... kelnaičių.'],[BU(),'KELNAIČIŲ?! Mano tobulas vaikinas...!']]}
+  ],
+  outro:[[G(),'Senelis kadaise pasakojo apie baisią pabaisą per pilnatį... Ar tai buvau aš?'],['Pasakotojas','3 skyrius įveiktas! Meistras Roshi kviečia treniruotis į Kame Hausą.']]};
+
+WORLDS[4]={id:4,name:'Kame Hause treniruotės',sub:'Mangos 24–32 sk.',lvl:[22,26],biome:'tropic',pos:[.22,.68],
+  map:{base:GRASS,edge:TREE,sprinkle:[[TREE,.02],[FLOWER,.03]]},
+  gen(o){const{fill,forest,house,decor,poi,road,trees}=o;
+    fill(9,32,13,30,WATER,.25,3);fill(10,31,5.5,4.5,SAND,.25,4);house('kamehouse',8,27,5,4);trees(10,33,4,3,.1,5);
+    road([[13,33],[22,33]],1,SAND);
+    fill(41,24,9,6,GRASS,.2,6);house('cityA',34,18,5,4);house('cityB',41,17,5,4);house('adobe2',36,26,5,4);house('cityB',44,26,5,4);decor('well',41,23,2,2);decor('lantern',39,22);decor('lantern',46,22);
+    for(let y=11;y<=17;y++)for(let x=52;x<=60;x++)if((x+y)%2===0)o.set(x,y,FLOWER);house('cityA',58,6,5,4);decor('hay',54,9);decor('barrel',56,10);
+    fill(40,45,4.5,3,WATER,.3,8);forest(60,45,15,10,.3,9);fill(62,47,3,2.2,GRASS,.2,10);
+    road([[22,33],[30,30],[38,24]],1.1,PATH);road([[41,23],[48,18],[55,12]],1,PATH);road([[42,28],[48,36],[55,42],[62,47]],1,PATH);
+    poi('start',12,33);poi('stone',8,37);poi('farm',55,13);poi('village',41,24);poi('jungle',56,43);poi('clearing',62,47)},
+  enemies:[['boar',22,46,6,66,20,5],['robber',24,32,16,50,32,7,{from:4}],['raptor',23,48,36,76,58,8],['panther',25,60,40,78,58,4]],
+  bosses:[{type:'lunchB',at:'village',L:25},{type:'saber',at:'clearing',L:26}],
+  safe:[[10,31,6]],
+  gates:[{r:[46,34,79,59],until:6,msg:'Džiunglės – vėliau. Meistras Roshi turi kitų užduočių.'}],
+  npcs:[{id:'roshi4',k:'roshi',name:'Meistras Roshi',at:[11,32],r:0,spd:0,lines:['Mokykis gerai, valgyk gerai, ilsėkis gerai – ir gyvenimą mėgaukis!','Ar tu man atvedei gražuolę? Ne? Na tada bėk dar ratą.']},
+    {id:'krillin',k:'krillin',name:'Krilinas',at:[13,30],r:2,spd:40,lines:['Aš irgi būsiu Roshi mokinys! ...Tikiuosi.','Tavo uodega tikra? Ha, ji man patinka!']},
+    {id:'farmer4',k:'farmer',name:'Pieninkas',at:[56,12],r:1.5,spd:30,lines:['Kas rytą – dvidešimt butelių pieno į kaimą!']},
+    {id:'lunchD',k:'lunchD',name:'Lunch',at:[9,34],r:1,spd:30,from:6,lines:['Gal išgersit arbatos? ...Ap-čiū!','Atsiprašau, aš kartais... pasikeičiu.']},
+    {id:'v4a',k:'villF',name:'Kaimietė',at:[40,25],r:3,spd:40,day:true,lines:['Plėšikai vėl užpuolė banką!']},
+    {id:'v4b',k:'villM',name:'Kaimietis',at:[45,23],r:3,spd:40,day:true,lines:['Meistro Roshi mokiniai kasdien neša pieną – ir bėga!']}],
+  loot:[[70,52],[30,46]],herbs:7,
+  intro:[['Pasakotojas','Mažytė saliukė su rausvu nameliu – Kame Hausas. Čia meistras Roshi treniruoja savo mokinius.'],[RS(),'Ateik, Goku. Šiandien turim naują mokinį.']],
+  steps:[
+    {t:'talk',n:'roshi4',txt:'Pasikalbėk su meistru Roshi',dlg:[[RS(),'Štai Krilinas iš Orin šventyklos. Abu būsit mano mokiniai.'],[RS(),'Pirmas išbandymas: įmečiau juodą akmenį į krūmus prie kranto. Kas pirmas suras – laimi!'],['Krilinas','(Šnabžda) Aš jį jau radau... ai, tai ne tas!']]},
+    {t:'take',p:'stone',txt:'Surask juodą akmenį saloje',dlg:[[G(),'Radau! Juodas akmuo – užuodžiau jį!'],[RS(),'Uosliu radai? Įdomu... Gerai! Rytoj – pieno išvežiojimas.']]},
+    {t:'go',p:'farm',txt:'Pieno išvežiojimas: nubėk į ūkį šiaurės rytuose',dlg:[['Pieninkas','Štai pienas. Ir greičiau – kaimas laukia!'],['Pasakotojas','Goku užsikabino pieno dėžes ant pečių. Sunku!']]},
+    {t:'go',p:'village',txt:'Nunešk pieną į kaimą',dlg:[['Pasakotojas','Kaime chaosas – plėšikai užpuolė banką!'],['Kaimietė','Gelbėkit! Jie šaudo!']]},
+    {t:'kill',e:'robber',n:6,txt:'Sustabdyk banko plėšikus',dlg:[['Pasakotojas','Plėšikai išsilakstė... bet iš banko išeina šviesiaplaukė mergina su kulkosvaidžiu.'],['Lunch (šviesiaplaukė)','Ką jūs čia sau leidžiat?! Mano grobis!']]},
+    {t:'boss',e:'lunchB',txt:'Sustabdyk šviesiaplaukę Lunch',dlg:[['Pasakotojas','Lunch nusičiaudėjo – ir jos plaukai staiga pamėlynavo.'],['Lunch','Oi... kur aš? Kodėl aš su ginklu? Atsiprašau!'],[RS(),'(Iš toli) Ji puiki! Atvesk ją į Kame Hausą gaminti valgio!']]},
+    {t:'kill',e:'raptor',n:6,txt:'Džiunglių treniruotė: įveik raptorius',dlg:[[G(),'Šitie dinozaurai greiti! Bet aš greitesnis.']]},
+    {t:'boss',e:'saber',txt:'Įveik džiunglių valdovą – kardadantį tigrą',dlg:[['Pasakotojas','Kardadantis tigras nusilenkė ir dingo tankmėje.'],['Krilinas','Tu... nugalėjai jį vienas? Aš net arti nepriėjau...']]},
+    {t:'talk',n:'roshi4',txt:'Grįžk į Kame Hausą pas meistrą Roshi',dlg:[[RS(),'Aštuoni mėnesiai treniruočių... Nusiimkit kriaukles.'],['Pasakotojas','Be sunkių vėžlio kriauklių Goku ir Krilinas šokteli aukščiau namo stogo!'],[RS(),'Puiku. Jūs pasiruošę. Plaukiam į Papajos salą – į 21-ąjį Tenkaiči turnyrą!']]}
+  ],
+  outro:[['Pasakotojas','4 skyrius įveiktas! Laukia didysis turnyras.']]};
+
+WORLDS[5]={id:5,name:'21-asis Tenkaiči turnyras',sub:'Mangos 33–54 sk.',lvl:[26,32],biome:'city',pos:[.62,.62],
+  map:{base:GRASS,edge:TREE,sprinkle:[[TREE,.015],[FLOWER,.02]],clearT:PATH},
+  gen(o){const{fill,forest,house,decor,poi,road,set,trees}=o;
+    for(let y=6;y<56;y++)for(let x=6;x<74;x++){if(y%14===10||x%16===8)set(x,y,PATH)}
+    for(let y=22;y<=34;y++)for(let x=33;x<=47;x++)set(x,y,SAND);for(let y=21;y<=35;y++){set(32,y,PATH);set(48,y,PATH)}
+    for(const[k,x,y]of[['cityA',11,12],['cityB',18,12],['cityC',26,12],['cityA',54,12],['cityC',61,12],['cityB',11,40],['cityA',18,40],['cityC',54,40],['cityB',61,40],['cityA',66,26]])house(k,x,y,5,4);
+    house('tent',28,4,3,3);decor('statue',38,18);decor('statue',42,18);for(const x of[33,47])for(const y of[22,34])decor('lantern',x,y);
+    forest(18,28,7,5,.25,7);fill(70,52,10,5,WATER,.3,8);
+    poi('start',8,30);poi('reg',29,8);poi('park',18,30);poi('park2',60,30);poi('arena',40,28)},
+  enemies:[['thug',26,6,6,74,56,8],['fighterA',27,10,22,28,38,8],['fighterB',29,52,22,72,38,6,{from:3}]],
+  bosses:[{type:'bacterian',at:'arena',L:27},{type:'giran',at:'arena',L:29},{type:'nam',at:'arena',L:31},{type:'jackie',at:'arena',L:32}],
+  safe:[[29,8,4],[40,28,5]],
+  gates:[{r:[32,21,48,35],until:4,msg:'Į ringą įleidžiami tik atrankos nugalėtojai.'}],
+  npcs:[{id:'registrar',k:'registrar',name:'Teisėjas',at:[30,8],r:0,spd:0,lines:['Atranka – parke. Laimėk kovas ir pateksi į finalą!']},
+    {id:'krillin5',k:'krillin',name:'Krilinas',at:[27,9],r:1.5,spd:40,lines:['Tiek stiprių kovotojų... Kelis jau mačiau skraidančius!']},
+    {id:'v5a',k:'villM',name:'Žiūrovas',at:[36,20],r:4,spd:50,day:true,lines:['Šiemet finale – keisti tipai!']},
+    {id:'v5b',k:'villF',name:'Žiūrovė',at:[46,36],r:4,spd:50,day:true,lines:['Tas mažylis su uodega – mielas!']},
+    {id:'v5c',k:'kid2',name:'Vaikas',at:[20,20],r:4,spd:80,day:true,kid:true,lines:['Aš būsiu turnyro čempionas!']}],
+  loot:[[70,8],[8,52]],herbs:5,
+  intro:[['Pasakotojas','Papajos sala ūžia: šimtai kovotojų iš viso pasaulio atvyko į 21-ąjį Tenkaiči turnyrą.'],[RS(),'Aš... ee... turiu reikalų. Registruokitės be manęs!']],
+  steps:[
+    {t:'go',p:'reg',txt:'Užsiregistruok turnyrui (palapinė šiaurėje)',dlg:[['Krilinas','Štai registracija!']]},
+    {t:'talk',n:'registrar',txt:'Pakalbink teisėją',dlg:[['Teisėjas','Vardas? Goku. Amžius? Dvylika. Puiku! Atrankos kovos vyksta parke vakaruose.'],['Teisėjas','Laimėk aštuonias kovas – ir pateksi į finalą.']]},
+    {t:'kill',e:'fighterA',n:6,txt:'Atrankos kovos parke vakaruose',dlg:[['Teisėjas','Nuostabu! Dar kelios kovos rytinėje grupėje.']]},
+    {t:'kill',e:'fighterB',n:4,txt:'Atrankos kovos rytinėje grupėje',dlg:[['Teisėjas','Finalininkai: Goku, Krilinas, Bakterianas, Giranas, Namas ir... Jackie Chun!'],['Pasakotojas','Žiūrovai ūžia. Į ringą!']]},
+    {t:'boss',e:'bacterian',txt:'Ketvirtfinalis: Bakterianas',pre:[['Bakterianas','Aš nesiprausiau metus! Užuosk mano galią!']],dlg:[[G(),'Neturiu nosies – tai ir nejaučiu kvapo!'],['Pasakotojas','Bakterianas krito nuo vieno smūgio į... na, žemiau juostos.']]},
+    {t:'boss',e:'giran',txt:'Pusfinalis: Giranas',pre:[['Giranas','Mano guma surakins tave!']],dlg:[['Giranas','Aš... pasiduodu!'],['Teisėjas','Giranas iškrito už ringo! Goku – finale!']]},
+    {t:'boss',e:'nam',txt:'Pusfinalis: Namas',pre:[['Namas','Laimėjęs nupirksiu vandens savo kaimui. Atleisk, vaike.']],dlg:[['Namas','Tu laimėjai sąžiningai. Mano kaimui reikia lietaus...'],[G(),'Pamatysi – lietus bus!']]},
+    {t:'boss',e:'jackie',txt:'Finalas: Jackie Chun',pre:[['Jackie Chun','Jaunuoli, pažiūrėkim, ko tave išmokė... tas senis Roshi.']],dlg:[['Pasakotojas','Abu kovotojai išskrido iš ringo vienu metu – bet Jackie koja palietė sieną akimirka vėliau.'],['Teisėjas','21-ojo turnyro čempionas – Jackie Chun!'],[G(),'Kitą kartą tikrai laimėsiu! O tavo kvapas – kaip meistro Roshi...'],['Jackie Chun','Ee... Iki pasimatymo!']]}
+  ],
+  outro:[['Pasakotojas','5 skyrius įveiktas! Goku vėl leidžiasi ieškoti senelio keturių žvaigždučių rutulio... o šiaurėje jo laukia Raudonojo kaspino armija.']]};
+
+WORLDS[6]={id:6,name:'Raudonasis kaspinas: Šiaurė',sub:'Mangos 55–75 sk.',lvl:[32,40],biome:'snow',pos:[.42,.10],
+  map:{base:GRASS,edge:TREE,sprinkle:[[TREE,.035]]},
+  gen(o){const{fill,forest,house,decor,poi,road,trees}=o;
+    forest(30,48,18,8,.32,3);fill(30,47,3,2.2,GRASS,.2,4);
+    fill(24,26,10,7,GRASS,.2,5);house('snowhouse',17,20,5,4);house('snowhouse',25,19,5,4);house('snowhouse',19,28,5,4);house('snowhouse',27,28,5,4);decor('barrel',23,25);decor('lantern',24,23);
+    fill(42,36,6,3.5,WATER,.3,6);
+    fill(56,12,13,10,GRASS,.2,7);house('musclet',54,7,3,3);house('rrbase',63,10,8,4);decor('crate',58,14);decor('crate',59,14);decor('crate',50,16);
+    trees(64,40,10,10,.18,8);
+    road([[8,52],[18,49],[30,47]],1,PATH);road([[30,47],[28,36],[24,27]],1,PATH);road([[24,27],[36,24],[46,18],[55,11]],1,PATH);
+    poi('start',8,52);poi('forest',30,47);poi('village',24,26);poi('tower',55,12);poi('t1',52,16);poi('t2',58,17);poi('t3',55,14)},
+  enemies:[['snowwolf',32,6,30,44,58,9],['rrsoldier',34,30,12,62,40,9],['yeti',36,58,28,77,56,5],['ninja',37,44,4,72,24,6,{from:5}]],
+  bosses:[{type:'silver',at:'forest',L:33},{type:'murasaki',at:'t1',L:36},{type:'buyon',at:'t2',L:38},{type:'white',at:'t3',L:40}],
+  safe:[[24,26,7]],
+  gates:[{r:[42,0,79,26],until:5,msg:'Raumenų bokštą saugo armija. Pirma išlaisvink kaimą.'}],
+  npcs:[{id:'suno',k:'suno',name:'Sunė',at:[22,25],r:1.5,spd:30,lines:['Ačiū, kad išgelbėjai mūsų kaimą!','Mano tėtis – kaimo vadas. Jį laiko bokšte!']},
+    {id:'android8',k:'android8',name:'Androidas 8',at:[52,13],r:1,spd:20,from:8,lines:['Aš nenoriu kovoti... Aš noriu būti draugas.','Vadink mane Hačanu.']},
+    {id:'v6a',k:'villM',name:'Kaimietis',at:[26,24],r:3,spd:30,day:true,lines:['Armija atėmė visus mūsų ginklus...']},
+    {id:'v6b',k:'kid1',name:'Vaikas',at:[20,27],r:3,spd:70,day:true,kid:true,lines:['Sniego senį pastatysi su manim?']}],
+  loot:[[72,50],[8,30]],herbs:6,
+  intro:[['Pasakotojas','Kinto debesėlis įskrido į pūgą. Žemiau – snieguoti miškai ir dūmai iš karinės bazės.'],[G(),'Brr! Šalta... Bet radaras rodo rutulį šiaurėje!']],
+  steps:[
+    {t:'go',p:'forest',txt:'Kažkas šaudo miške – patikrink',dlg:[['Pulkininkas Silveris','Vaikas su drakono rutulio radaru? Kareiviai, atimkit jį!']]},
+    {t:'boss',e:'silver',txt:'Įveik pulkininką Silverį',dlg:[['Pulkininkas Silveris','Neįmanoma... Raudonojo kaspino armija tau to neatleis!'],[G(),'Raudonas kaspinas? Gražus vardas. Bet jūs blogi.']]},
+    {t:'go',p:'village',txt:'Eik į Džingl kaimą',dlg:[['Pasakotojas','Kaime – kareiviai. Gyventojai slepiasi namuose.']]},
+    {t:'talk',n:'suno',txt:'Pasikalbėk su mergaite Sune',dlg:[['Sunė','Armija užėmė mūsų kaimą ir ieško rutulio! Mano tėtis bokšte!'],[G(),'Tai aš juos išvaikysiu. Kiek jų?'],['Sunė','Labai daug...']]},
+    {t:'kill',e:'rrsoldier',n:8,txt:'Išvaikyk Raudonojo kaspino kareivius',dlg:[['Sunė','Tu tikras herojus! Raumenų bokštas – šiaurės rytuose.']]},
+    {t:'go',p:'tower',txt:'Eik prie Raumenų bokšto',dlg:[['Generolas Vaitas (garsiakalbis)','Sveikas atvykęs į Raumenų bokštą! Kiekviename aukšte tavęs laukia mirtis!']]},
+    {t:'boss',e:'murasaki',txt:'Įveik ninja Murasakį',dlg:[['Ninja Murasaki','Mano broliai... dingo!'],['Pasakotojas','Murasakis pabėgo per slaptas duris.']]},
+    {t:'boss',e:'buyon',txt:'Įveik Bujoną',dlg:[['Pasakotojas','Goku išmušė sieną – ir Bujonas sustingo šaltyje kaip ledinukas.']]},
+    {t:'talk',n:'android8',txt:'Pasikalbėk su Androidu 8',dlg:[['Androidas 8','Aš... nesu blogas. Generolas liepia kovoti, bet aš nenoriu.'],[G(),'Tai būk mano draugas! Hačanas – gražus vardas.'],['Androidas 8','Draugas... Vaitas viršuje. Atsargiai.']]},
+    {t:'boss',e:'white',txt:'Įveik generolą Vaitą bokšto viršuje',dlg:[['Generolas Vaitas','Hačanai, išdavike!'],['Pasakotojas','Androidas 8 vienu smūgiu išmetė Vaitą pro langą į sniegą.'],['Sunė','Tėti! Kaimas laisvas!']]}
+  ],
+  outro:[['Pasakotojas','6 skyrius įveiktas! Bet Raudonasis kaspinas tik pradėjo – generolas Mėlynasis jau medžioja kitą rutulį jūroje.']]};
+
+/* ================= WORLDS: DATA (7–11) ================= */
+WORLDS[7]={id:7,name:'Raudonasis kaspinas: Karino bokštas',sub:'Mangos 76–108 sk.',lvl:[40,48],biome:'jungle',pos:[.74,.40],
+  map:{base:GRASS,edge:TREE,sprinkle:[[TREE,.03],[FLOWER,.02]]},
+  gen(o){const{fill,forest,house,decor,poi,road,trees}=o;
+    fill(5,40,9,22,WATER,.3,3);fill(13,46,7,6,ROCK,.25,4);fill(14,46,4.5,3.4,CAVEF,.2,5);road([[8,40],[12,46],[17,47]],.9,CAVEF);
+    fill(40,22,11,8,GRASS,.15,6);house('karin',40,17,2,3);decor('tent',34,22,2,2);decor('pillar',44,24);decor('pillar',36,26);
+    forest(40,48,15,9,.3,7);
+    fill(68,28,10,9,SAND,.2,8);house('rrbase',64,22,8,4);for(const[x,y]of[[62,30],[63,30],[74,30],[75,30],[70,34]])decor('crate',x,y);
+    road([[8,22],[18,24],[30,24],[38,22]],1,PATH);road([[12,30],[10,38],[9,40]],.9,SAND);road([[42,24],[52,26],[62,28],[68,27]],1,PATH);
+    poi('start',8,22);poi('cave',13,46);poi('cave2',16,47);poi('upa',37,24);poi('karin',41,21);poi('tao',33,28);poi('hq',68,27)},
+  enemies:[['crab',40,4,34,24,58,8],['panther',42,26,40,58,58,8],['rrsoldier',43,48,8,78,44,8],['rrelite',45,56,18,78,40,7,{from:7}],['rrelite',45,46,30,60,44,4,{from:7}]],
+  bosses:[{type:'piratebot',at:'cave',L:42},{type:'blue',at:'cave2',L:44},{type:'taopaipai',at:'tao',L:46},{type:'blackmech',at:'hq',L:48}],
+  safe:[[39,23,6]],
+  gates:[{r:[28,10,52,34],until:3,msg:'Šventoji žemė – vėliau. Radaras rodo pakrantės urvą.'},{r:[54,8,79,46],until:7,msg:'Armijos štabą saugo per daug kareivių – pirma pasiruošk.'}],
+  npcs:[{id:'upa',k:'upa',name:'Upa',at:[37,23],r:1.5,spd:40,lines:['Tėtis saugo šventąją žemę ir Karino bokštą.','Bokštas toks aukštas – niekas nėra užlipęs!']},
+    {id:'karin',k:'karin',name:'Karinas',at:[41,20],r:0,spd:0,from:6,lines:['Senzu pupelė – viena pakanka visai dienai.','Pagauk mane, jei nori šventojo vandens! Miau.']},
+    {id:'bulma7',k:'bulma',name:'Bulma',at:[9,24],r:1.5,spd:30,lines:['Piratų lobis? Gal ten ir rutulys!']},
+    {id:'krillin7',k:'krillin',name:'Krilinas',at:[11,22],r:1.5,spd:40,lines:['Mėlynasis generolas... jis gali sustabdyti žmogų žvilgsniu!']}],
+  loot:[[74,44],[24,56]],herbs:7,
+  intro:[['Pasakotojas','Bulma rado senąjį piratų žemėlapį: rutulys paslėptas povandeniniame urve. Bet Mėlynasis generolas jau čia.'],[BU(),'Goku, Krilinai – urvas vakarų pakrantėje!']],
+  steps:[
+    {t:'go',p:'cave',txt:'Leiskis į piratų urvą vakarų pakrantėje',dlg:[['Pasakotojas','Urvo gilumoje sugirgžda senas mechanizmas... ir atsimerkia raudonos akys!']]},
+    {t:'boss',e:'piratebot',txt:'Įveik piratų robotą',dlg:[['Generolas Mėlynasis','Ačiū, kad atidarėt kelią. Dabar – lobis ir rutulys mano!']]},
+    {t:'boss',e:'blue',txt:'Įveik generolą Mėlynąjį',dlg:[['Generolas Mėlynasis','Mano psichinė galia... Kaip tu išsilaisvinai?!'],['Pasakotojas','Mėlynasis spruko. Rutulį laimei paėmė Goku.'],[BU(),'Radaras rodo paskutinį rutulį... šventojoje žemėje, prie Karino bokšto!']]},
+    {t:'go',p:'upa',txt:'Eik į šventąją žemę prie Karino bokšto',dlg:[['Upa','Tu irgi atėjai dėl rutulio? Mano tėtis jį saugo...']]},
+    {t:'talk',n:'upa',txt:'Pasikalbėk su Upa',dlg:[['Upa','Armija pasamdė žudiką Tao Pai Pai! Jis keliauja ant savo paties išmesto stulpo!'],[G(),'Ant stulpo?! Noriu pamatyti!']]},
+    {t:'boss',e:'taopaipai',txt:'Įveik žudiką Tao Pai Pai',pre:[['Tao Pai Pai','Kas trukdo? Vaikas? Mirk.']],dlg:[['Tao Pai Pai','Ne... gali... būti... Dodonpa neveikia?!'],['Pasakotojas','Tao Pai Pai sprogimo banga nubloškė į kalnus.'],['Upa','Tėtis išgelbėtas! Ačiū!']]},
+    {t:'talk',n:'karin',txt:'Užlipk į Karino bokštą ir pakalbink Kariną',dlg:[['Karinas','Tris dienas lipai? Šaunu. Šventąjį vandenį gausi tik atėmęs iš manęs!'],['Pasakotojas','Po trijų dienų gaudynių Goku pagaliau išplėšė ąsotėlį. Vanduo pasirodė paprastas... bet Goku tapo daug greitesnis.'],['Karinas','Vanduo – tik vanduo. Stipresniu tave padarė pati treniruotė. Štai senzu pupelės.']],on:()=>{Q.herbs=Math.min(9,Q.herbs+3)}},
+    {t:'kill',e:'rrelite',n:8,txt:'Šturmuok Raudonojo kaspino štabą (rytai)',dlg:[['Pasakotojas','Štabo vartai griūva. Raudonasis vadas slepiasi viduje...']]},
+    {t:'boss',e:'blackmech',txt:'Įveik Juodojo štabo robotą',dlg:[['Pasakotojas','Robotas sprogo. Raudonojo kaspino armija – sunaikinta.'],[G(),'Seneli, tavo rutulys pas mane!']]}
+  ],
+  outro:[['Pasakotojas','7 skyrius įveiktas! Bet paskutinis rutulys pas Būrėją Babą – o ji atiduoda jį tik nugalėjusiam penkis jos kovotojus.']]};
+
+WORLDS[8]={id:8,name:'Būrėjos Babos rūmai',sub:'Mangos 109–112 sk.',lvl:[48,52],biome:'palace',pos:[.86,.62],
+  map:{base:GRASS,edge:ROCK,sprinkle:[[TREE,.015]]},
+  gen(o){const{fill,house,decor,poi,road,trees}=o;
+    fill(44,26,14,9,WATER,.25,3);fill(44,24,7,4.5,PATH,.15,4);house('babapal',41,18,7,4);for(const x of[39,49])decor('pillar',x,26);
+    road([[44,26],[44,38]],1.2,PATH);
+    fill(14,30,8,7,GRASS,.2,5);for(const[x,y]of[[10,26],[13,25],[16,27],[11,32],[17,33],[14,35]])decor('statue',x,y);
+    fill(68,32,6,5,ROCK,.25,6);fill(68,32,3.5,2.6,CAVEF,.2,7);road([[60,34],[66,32]],.9,CAVEF);
+    fill(40,50,16,6,SAND,.3,8);trees(28,48,8,6,.12,9);
+    road([[8,50],[22,46],[44,40]],1.1,PATH);road([[22,46],[16,34]],.9,PATH);road([[44,40],[56,36],[60,34]],.9,PATH);
+    poi('start',8,50);poi('baba',44,24);poi('arena',44,28);poi('grave',14,30);poi('tomb',68,32)},
+  enemies:[['scorp',48,24,40,70,58,9],['ghost',49,6,22,24,40,8],['mummyM',50,58,24,78,42,8],['vulture',49,30,44,70,58,5]],
+  bosses:[{type:'fangs',at:'arena',L:49},{type:'seethrough',at:'arena',L:50},{type:'mummy',at:'arena',L:51},{type:'akkuman',at:'arena',L:52},{type:'gohanmask',at:'arena',L:52}],
+  safe:[[44,24,4]],
+  gates:[],
+  npcs:[{id:'baba',k:'baba',name:'Būrėja Baba',at:[46,23],r:0,spd:0,lines:['Mano spėjimai kainuoja brangiai. Bet tau – nemokamai, jei laimėsi.','Senis Roshi – mano mažasis brolis. Hi hi.']},
+    {id:'upa8',k:'upa',name:'Upa',at:[42,23],r:1,spd:30,lines:['Baba gali prikelti mirusiuosius vienai dienai!']},
+    {id:'krillin8',k:'krillin',name:'Krilinas',at:[40,25],r:1,spd:30,lines:['Tas Drakula... jis kanda!']}],
+  loot:[[72,48],[8,20]],herbs:6,
+  intro:[['Pasakotojas','Rūmai ant ežero, apgaubti rūko. Čia gyvena Būrėja Baba – ji randa bet ką, net paskutinį drakono rutulį.']],
+  steps:[
+    {t:'go',p:'baba',txt:'Eik į Būrėjos Babos rūmus',dlg:[['Būrėja Baba','Dar vienas, norintis spėjimo. Nugalėk mano penkis kovotojus – ir pasakysiu, kur rutulys.']]},
+    {t:'talk',n:'baba',txt:'Pasikalbėk su Būrėja Baba',dlg:[['Būrėja Baba','Bet pirma įrodyk drąsą. Kapinėse vakaruose klajoja vaiduokliai – išvaikyk juos.'],[G(),'Vaiduokliai? Ar jie valgo pietus?']]},
+    {t:'kill',e:'ghost',n:6,txt:'Išvaikyk vaiduoklius kapinėse vakaruose',dlg:[['Būrėja Baba','Neblogai. Dabar – į areną virš ežero!']]},
+    {t:'boss',e:'fangs',txt:'1 kova: Drakula',dlg:[['Krilinas','Jis man įkando! Bet tu jį nugalėjai!']]},
+    {t:'boss',e:'seethrough',txt:'2 kova: Nematomasis',pre:[['Pasakotojas','Areną kažkas užpuolė... bet nieko nesimato!']],dlg:[['Pasakotojas','Goku užsimerkė, išgirdo žingsnius – ir smūgis pataikė į tuščią orą, kuris suaimanavo.']]},
+    {t:'kill',e:'mummyM',n:5,txt:'Įveik mumijų tarnus kape rytuose',dlg:[['Būrėja Baba','Hm. Trečiasis kovotojas jau laukia arenoje.']]},
+    {t:'boss',e:'mummy',txt:'3 kova: Mumija',dlg:[['Pasakotojas','Mumijos tvarsčiai išsivyniojo – po jais tik dulkės.']]},
+    {t:'boss',e:'akkuman',txt:'4 kova: Velnias Akumanas',pre:[['Velnias Akumanas','Akumaitas sprogdina visus, kurie turi blogų minčių!']],dlg:[[G(),'Nesprogau! Neturiu blogų minčių!'],['Velnias Akumanas','Tai... neįmanoma!']]},
+    {t:'boss',e:'gohanmask',txt:'5 kova: Kaukėtas kovotojas',pre:[['Kaukėtas kovotojas','...'],[G(),'Tavo kovos stilius... toks pažįstamas.']],dlg:[['Pasakotojas','Kaukė nukrito. Po ja – senelis Gohanas, vienai dienai sugrįžęs iš anapus.'],['Senelis Gohanas','Užaugai, Goku. Ir tapai labai stiprus.'],[G(),'SENELI!!'],['Būrėja Baba','Rutulys? Jis... jau su jumis. Lauke, pas Upą.']]}
+  ],
+  outro:[['Senelis Gohanas','Saugok draugus, Goku. Iki pasimatymo.'],['Pasakotojas','8 skyrius įveiktas! Praėjo treji metai. Goku keliauja į 22-ąjį turnyrą.']]};
+
+WORLDS[9]={id:9,name:'22-asis Tenkaiči turnyras',sub:'Mangos 113–135 sk.',lvl:[52,58],biome:'dusk',pos:[.62,.82],
+  map:{base:GRASS,edge:TREE,sprinkle:[[TREE,.015]],clearT:PATH},
+  gen(o){const{fill,forest,house,decor,poi,road,set}=o;
+    for(let y=6;y<56;y++)for(let x=6;x<74;x++){if(y%12===6||x%14===4)set(x,y,PATH)}
+    for(let y=24;y<=36;y++)for(let x=29;x<=43;x++)set(x,y,SAND);
+    for(const[k,x,y]of[['cityC',8,8],['cityB',20,8],['cityA',48,8],['cityC',60,8],['cityB',8,40],['cityA',20,44],['cityC',50,44],['cityB',62,40]])house(k,x,y,5,4);
+    house('tent',57,22,3,3);house('cityC',27,8,5,4);decor('pillar',26,13);decor('pillar',32,13);for(const x of[29,43])for(const y of[24,36])decor('lantern',x,y);
+    forest(62,30,7,5,.25,6);
+    poi('start',70,30);poi('reg',58,26);poi('dojo',29,13);poi('arena',36,30);poi('park',62,30)},
+  enemies:[['thug',52,6,6,74,56,8],['crane',54,14,12,46,22,8,{from:2}],['fighterB',55,54,24,74,40,6]],
+  bosses:[{type:'chiaotzu',at:'arena',L:54},{type:'taocyborg',at:'arena',L:56},{type:'tien',at:'arena',L:58}],
+  safe:[[58,26,4],[36,30,5]],
+  gates:[{r:[29,24,43,36],until:4,msg:'Ringas dar uždarytas – pirma susitvarkyk su Gervės mokykla.'}],
+  npcs:[{id:'registrar9',k:'registrar',name:'Teisėjas',at:[58,25],r:0,spd:0,lines:['Sveikas sugrįžęs, Goku! Užaugai!']},
+    {id:'krillin9',k:'krillin',name:'Krilinas',at:[56,27],r:1.5,spd:40,lines:['Gervės mokykla... Jie nekenčia meistro Roshi.']},
+    {id:'yamcha9',k:'yamcha',name:'Yamcha',at:[60,28],r:1.5,spd:40,lines:['Šįkart aš laimėsiu! ...Tikiuosi.']},
+    {id:'v9a',k:'villF',name:'Žiūrovė',at:[40,22],r:4,spd:50,day:true,lines:['Tas trijų akių vaikinas – baisus!']}],
+  loot:[[72,52],[8,24]],herbs:5,
+  intro:[['Pasakotojas','Praėjo treji metai. Saulei leidžiantis Papajos sala vėl pilna kovotojų.'],['Krilinas','Goku, tu užaugai! Ir... vis dar su ta pačia lazda.']],
+  steps:[
+    {t:'go',p:'reg',txt:'Užsiregistruok 22-ajam turnyrui',dlg:[['Teisėjas','Goku! Krilinas! Yamcha! Ir... Gervės mokyklos mokiniai Tienas ir Čiaozu.']]},
+    {t:'talk',n:'registrar9',txt:'Pakalbink teisėją',dlg:[['Teisėjas','Gervės mokykla mieste kelia triukšmą – jų mokiniai puola kitų mokyklų kovotojus.'],[G(),'Tai aš su jais pasikalbėsiu!']]},
+    {t:'go',p:'dojo',txt:'Nueik į Gervės mokyklą šiaurės vakaruose',dlg:[['Gervės mokinys','Roshi mokinys? Pulkit jį!']]},
+    {t:'kill',e:'crane',n:8,txt:'Įveik Gervės mokinius',dlg:[['Teisėjas','Ringas atidarytas! Finalininkai – į areną!']]},
+    {t:'boss',e:'chiaotzu',txt:'Kova: Čiaozu',pre:[['Čiaozu','Aš moku skaityti mintis... ir sustabdyti tavo širdį!']],dlg:[[G(),'Matematika! Tu nemoki skaičiuoti, Čiaozu!'],['Čiaozu','Šeši... septyni... Ai, iškritau!']]},
+    {t:'boss',e:'taocyborg',txt:'Kova: Tao Pai Pai (kiborgas)',pre:[['Tao Pai Pai','Sugrįžau. Dabar mano kūnas – mašina!']],dlg:[['Pasakotojas','Tao Pai Pai granata sprogo jo paties rankoje. Tienas sustabdė savo mokytoją.']]},
+    {t:'boss',e:'tien',txt:'Finalas: Tienas',pre:[['Tienas','Tu kovoji garbingai, Goku. Aš irgi kovosiu garbingai.']],dlg:[['Pasakotojas','Abu nukrito vienu metu... bet Tienas kojomis palietė žemę pirmas – sunkvežimis! Tienas – čempionas.'],['Tienas','Gervės mokykla... nebe mano kelias. Ačiū, Goku.']]}
+  ],
+  outro:[['Pasakotojas','Tą naktį Krilinas buvo nužudytas. Prie jo kūno – raštelis su ženklu „Demonas“.'],['Pasakotojas','9 skyrius įveiktas! Prabudo Karalius Piccolo.']]};
+
+WORLDS[10]={id:10,name:'Karalius Piccolo',sub:'Mangos 136–149 sk.',lvl:[58,66],biome:'waste',pos:[.86,.18],
+  map:{base:GRASS,edge:ROCK,sprinkle:[[TREE,.015],[ROCK,.008]]},
+  gen(o){const{fill,house,decor,poi,road,trees}=o;
+    fill(24,40,9,6,GRASS,.2,3);house('ruin',18,35,5,4);house('ruin',26,34,5,4);house('ruin',20,43,5,4);decor('crate',24,40);
+    for(const[x,y,r]of[[40,44,3],[50,38,2.5],[12,20,2.5],[36,12,3]])fill(x,y,r,r*.7,ROCK,.3,x);
+    fill(36,30,5,3,WATER,.3,4);trees(36,28,8,6,.1,5);
+    fill(63,12,13,9,SAND,.2,6);house('kingcastle',59,5,8,4);decor('statue',57,13);decor('statue',69,13);
+    road([[8,48],[20,42],[24,40]],1,PATH);road([[24,40],[34,32],[44,22],[54,16],[63,10]],1,PATH);road([[34,32],[30,30]],.8,PATH);
+    poi('start',8,48);poi('town',24,40);poi('yaji',31,31);poi('cliff',44,22);poi('castle',63,11);poi('gate',58,16)},
+  enemies:[['demon',58,6,24,40,56,9],['pterod',60,30,10,56,44,6],['kingsoldier',61,50,8,78,30,8],['demon',62,48,26,78,56,6]],
+  bosses:[{type:'tambourine',at:'town',L:60},{type:'cymbal',at:'cliff',L:62},{type:'drum',at:'gate',L:64},{type:'kingpiccolo',at:'castle',L:66}],
+  safe:[[31,31,4]],
+  gates:[{r:[50,0,79,26],until:4,msg:'Karaliaus pilis per toli ir per pavojinga. Pirma reikia sustiprėti.'}],
+  npcs:[{id:'yaji',k:'yajirobe',name:'Jadžirobė',at:[31,30],r:1,spd:20,from:2,lines:['Žuvis mano! ...Na gerai, pasidalinsim.','Aš samurajus. Didžiausias pasaulyje. Tikrai.']},
+    {id:'bulma10',k:'bulma',name:'Bulma',at:[10,46],r:1,spd:20,lines:['Goku... Krilinas... Mes jį prikelsim drakono rutuliais, pažadu.']},
+    {id:'karin10',k:'karin',name:'Karinas',at:[33,32],r:0,spd:0,from:3,lines:['Šventasis vanduo... „Ultra dieviškas vanduo“ – arba stiprybė, arba mirtis.']}],
+  loot:[[72,50],[10,10]],herbs:7,
+  intro:[['Pasakotojas','Pasaulis aptemo. Karalius Piccolo išsilaisvino ir siunčia savo vaikus – demonus – žudyti stipriausių kovotojų.'],[G(),'Krilinai... Aš atkeršysiu už tave.']],
+  steps:[
+    {t:'go',p:'town',txt:'Ieškok Krilino žudiko griuvėsių mieste',dlg:[['Tamburinas','Ieškai manęs, berniuk? Tu – sekantis sąraše.']]},
+    {t:'boss',e:'tambourine',txt:'Įveik demoną Tamburiną',dlg:[[G(),'Čia – už Kriliną!'],['Pasakotojas','Tamburinas sudužo į pelenus. Bet iš tolo jo mirtį pajuto pats Karalius Piccolo...']]},
+    {t:'talk',n:'yaji',txt:'Kažkas prie ežero kepa žuvį – pasikalbėk',dlg:[['Jadžirobė','Tai mano žuvis! ...Tu irgi alkanas? Hmm.'],[G(),'Tu stiprus! Eime kartu prieš Piccolo!'],['Jadžirobė','Aš? Ne-ne... Bet palydėsiu iki uolų. Ten šmirinėja dar vienas demonas.']]},
+    {t:'boss',e:'cymbal',txt:'Įveik demoną Cimbolą prie uolų',dlg:[['Pasakotojas','Jadžirobė vienu kardo mostu perkirto Cimbolą... ir suvalgė jo pusę? Ne – tik pusryčius.'],['Karinas','Goku, išgerk ultra dieviško vandens. Tai – vienintelis kelias nugalėti Karalių.']]},
+    {t:'go',p:'gate',txt:'Žygiuok į Karaliaus Piccolo pilį (šiaurės rytai)',dlg:[['Pasakotojas','Pilies vartus saugo demonų kariauna ir milžinas Būgnas.']]},
+    {t:'kill',e:'demon',n:8,txt:'Prasiveržk pro demonų kariauną',dlg:[['Būgnas','GRRAAAH!']]},
+    {t:'boss',e:'drum',txt:'Įveik milžiną Būgną',dlg:[[G(),'Vienas smūgis! Kur tavo karalius?!']]},
+    {t:'boss',e:'kingpiccolo',txt:'Įveik Karalių Piccolo',pre:[['Karalius Piccolo','Gohano anūkas? Pasaulis bus mano, o tu – dulkės.']],dlg:[['Pasakotojas','Goku prasiveržė kiaurai Karaliaus Piccolo kūną. Demonas sudegė danguje.'],['Karalius Piccolo','Tai... dar... ne pabaiga...'],['Pasakotojas','Paskutiniu kvėptelėjimu Piccolo išspjovė kiaušinį – savo atžalą.']]}
+  ],
+  outro:[['Pasakotojas','Drakonas prikėlė Kriliną ir visus žuvusius. Goku išėjo treniruotis pas Dievą.'],['Pasakotojas','10 skyrius įveiktas! Po trejų metų – 23-iasis turnyras.']]};
+
+WORLDS[11]={id:11,name:'23-iasis Tenkaiči turnyras',sub:'Mangos 150–194 sk.',lvl:[66,72],biome:'city',pos:[.40,.88],
+  map:{base:GRASS,edge:TREE,sprinkle:[[TREE,.02],[FLOWER,.02]],clearT:PATH},
+  gen(o){const{fill,forest,house,decor,poi,road,set}=o;
+    for(let y=4;y<58;y++)for(let x=4;x<76;x++){if(y%13===4||x%15===10)set(x,y,PATH)}
+    for(let y=22;y<=36;y++)for(let x=33;x<=49;x++)set(x,y,SAND);
+    for(const[k,x,y]of[['cityA',12,7],['cityB',27,7],['cityC',52,7],['cityA',62,7],['cityB',12,44],['cityC',27,44],['cityA',52,44],['cityB',62,44]])house(k,x,y,5,4);
+    house('tent',19,20,3,3);house('pillar',38,16,1,2);house('pillar',44,16,1,2);decor('statue',41,18);for(const x of[33,49])for(const y of[22,36])decor('lantern',x,y);
+    forest(66,28,8,6,.25,6);fill(10,32,6,4,WATER,.3,7);
+    poi('start',6,40);poi('reg',20,24);poi('park',66,28);poi('arena',41,29)},
+  enemies:[['thug',66,4,4,76,58,8],['fighterA',66,58,20,76,40,7],['fighterB',68,4,10,30,30,6],['fighterB',68,50,44,76,58,4]],
+  bosses:[{type:'chichiT',at:'arena',L:68},{type:'shen',at:'arena',L:70},{type:'piccolojr',at:'arena',L:72}],
+  safe:[[20,24,4],[41,29,5]],
+  gates:[{r:[33,22,49,36],until:3,msg:'Ringas atsidarys po atrankos.'}],
+  npcs:[{id:'registrar11',k:'registrar',name:'Teisėjas',at:[21,23],r:0,spd:0,lines:['Atranka – visame mieste!']},
+    {id:'krillin11',k:'krillin',name:'Krilinas',at:[18,25],r:1.5,spd:40,lines:['Tu išaugai aukštesnis už mane!']},
+    {id:'bulma11',k:'bulma',name:'Bulma',at:[22,26],r:1.5,spd:30,lines:['Goku... tu toks aukštas! Ir... visai gražus?!']},
+    {id:'tien11',k:'tien',name:'Tienas',at:[24,24],r:1,spd:30,lines:['Šįkart kovosim už pasaulį.']}],
+  loot:[[72,54],[6,8]],herbs:6,
+  intro:[['Pasakotojas','Praėjo treji metai. Goku užaugo – dabar jis aukštas jaunuolis su ta pačia nesutramdoma šukuosena.'],['Krilinas','Goku?! Tu... toks aukštas!']],
+  steps:[
+    {t:'go',p:'reg',txt:'Užsiregistruok 23-iajam turnyrui',dlg:[['Teisėjas','Šiemet – keisti dalyviai: žalias vyras su apsiaustu ir kažkoks Šenas...']]},
+    {t:'talk',n:'registrar11',txt:'Pakalbink teisėją',dlg:[['Teisėjas','Atrankos kovos – visame mieste. Įveik aštuonis varžovus.']]},
+    {t:'kill',e:'fighterB',n:7,txt:'Atrankos kovos mieste',dlg:[['Teisėjas','Pirmoji kova: Goku prieš... paslaptingą merginą!']]},
+    {t:'boss',e:'chichiT',txt:'Kova: paslaptingoji mergina',pre:[['Mergina','Tu pažadėjai mane vesti! Prisimeni?']],dlg:[[G(),'Či-Či?! Aš maniau, kad „vesti“ – tai kažkas valgomo!'],['Či-Či','Tai kada vestuvės?'],[G(),'Na... gerai! Po turnyro!']]},
+    {t:'boss',e:'shen',txt:'Kova: Šenas (Dievas persirengęs)',pre:[['Šenas','Turiu sustabdyti Piccolo – bet pirma išbandysiu tave.']],dlg:[['Šenas','Tu – vienintelis, kuris gali jį nugalėti. Aš esu Dievas, Goku.']]},
+    {t:'boss',e:'piccolojr',txt:'Finalas: Piccolo Jaunesnysis',pre:[['Piccolo Jaunesnysis','Tėvo kerštas – tavo kraujas. Šiandien pasaulis taps mano!']],dlg:[['Pasakotojas','Paskutiniu smūgiu Goku išmetė Piccolo už ringo.'],['Teisėjas','23-iojo Tenkaiči turnyro čempionas – SON GOKU!'],[G(),'Senzu pupelę jam. Kitą kartą vėl pakovosim, Piccolo.'],['Piccolo Jaunesnysis','...Kitą kartą aš tave nužudysiu.']]}
+  ],
+  outro:[['Pasakotojas','Goku ir Či-Či susituokė. Prasidėjo nauja era...'],['Pasakotojas','DRAGON BALL – PABAIGA. Netrukus: Dragon Ball Z.']]};
+
+/* ================= WORLDS: ENGINE ================= */
+const ELITE_F='sepia(.9) hue-rotate(230deg) saturate(3) brightness(1.05)';
+function eliteOn(id){const W=WORLDS[id||WID];return !!(W&&P&&P.lvl>=W.lvl[1]+20)}
+function eliteLv(L){return Math.max(L,P.lvl-3)+ri(0,4)}
+function applyElite(){if(!eliteOn())return;for(const e of enemies){if(e.boss||e.ai==='none')continue;const t=ETYPES[e.type];if(!e.lv)e.lv=1;lvScale(e,eliteLv(e.lv));e.xp=Math.round(e.xp*1.5);e.elite=true}}
+function kintoOK(){return Q&&Q.s>=14}
+function worldUnlocked(id){if(id===1)return true;const W=WORLDS[id];const prev=id===2?(Q.s>=14):worldDone(id-1);return prev&&P.lvl>=W.lvl[0]}
+function worldLockWhy(id){if(id===1)return'';const W=WORLDS[id];const prev=id===2?(Q.s>=14):worldDone(id-1);if(!prev)return'Pirma įveik: '+WORLDS[id-1].name;if(P.lvl<W.lvl[0])return`Reikia Lv ${W.lvl[0]} (tavo Lv ${P.lvl})`;return''}
+
+function loadWorld(){TEX={};BIO=WID===1?null:BIOMES[curW().biome];
+  if(WID===1)genMap();else genWorld(curW());buildMapCache();
+  inside=null;spawnEnemies();spawnNPCs();buildItems();shots=[];hazards=[];orbs=[];parts=[];floats=[];
+  if(WID===1){B={x:CAR.x,y:CAR.y}}}
+function travelTo(id){if(!worldUnlocked(id)){say([['Kinto',worldLockWhy(id)]]);return}
+  closeWorlds();save();const t0=performance.now();$('travelOv').style.display='flex';$('travelName').textContent=WORLDS[id].name;sfx('level');
+  const cv2=$('travelCv'),g=cv2.getContext('2d');cv2.width=Math.min(innerWidth,900);cv2.height=Math.min(innerHeight,420);
+  const anim=()=>{const k=(performance.now()-t0)/2200;g.fillStyle='#3a8ad0';g.fillRect(0,0,cv2.width,cv2.height);const gr=g.createLinearGradient(0,0,0,cv2.height);gr.addColorStop(0,'#2a5aa0');gr.addColorStop(1,'#a0d8f8');g.fillStyle=gr;g.fillRect(0,0,cv2.width,cv2.height);
+    g.fillStyle='#ffffffcc';for(let i=0;i<14;i++){const x=((i*173-k*1400*(1+i%3*.4))%(cv2.width+200)+cv2.width+200)%(cv2.width+200)-100,y=30+(i*67)%(cv2.height-60);g.beginPath();g.ellipse(x,y,50+(i%3)*20,14,0,0,7);g.fill()}
+    const gx=cv2.width*(.15+.7*Math.min(1,k)),gy=cv2.height*.5+Math.sin(k*12)*8;g.imageSmoothingEnabled=false;g.drawImage(SPX.cloud,gx-36,gy+6,72,30);const s=BUILTIN.hero,fw=s.tex.width/6,fh=s.tex.height/18;g.drawImage(s.tex,0,2*fh,fw,fh,gx-20,gy-40,40,60);
+    g.fillStyle='#fff';for(let i=0;i<6;i++)g.fillRect(gx-60-i*18,gy+16+((i*7)%10),10,2);
+    if(k<1.05)requestAnimationFrame(anim);else{$('travelOv').style.display='none';WID=id;Q.wid=id;Q.pcamp=null;loadWorld();P.x=SPAWN.x;P.y=SPAWN.y;P.fx=0;P.fy=1;P.inv=1.5;save();
+      if(id===1)say([['Pasakotojas','Kinto debesėlis nuskraidino Goku atgal į Paozu kalnus.']].concat(eliteOn(1)?[['Pasakotojas','Priešai čia sustiprėjo pagal tavo jėgą – jų spalva pasikeitė, o XP dvigubai vertingesnis!']]:[]));
+      else if(eliteOn())say([['Pasakotojas','Tu jau gerokai stipresnis už šio pasaulio priešus – jie sustiprėjo kartu su tavimi (pakitusi spalva, +50% XP).']])}};
+  requestAnimationFrame(anim)}
+
+/* ---------- story engine ---------- */
+function stepTarget(s){if(!s)return null;if(s.t==='go'||s.t==='take')return POI[s.p];if(s.t==='talk'){const n=NPCS.find(m=>m.id===s.n);return n||null}
+  if(s.t==='boss'){const e=enemies.find(x=>x.type===s.e);return e?{x:e.sx,y:e.sy}:null}
+  if(s.t==='kill'){let b=null,bd=1e9;for(const e of enemies)if(e.alive&&e.type===s.e&&(!e.cond||e.cond())){const d=dist(P,e);if(d<bd){bd=d;b=e}}return b}return null}
+function questTextW(){const q=wq(),W=curW();if(q.done||q.st>=W.steps.length)return W.name+' ✔ – Kinto: Meniu → Kelionė';const s=W.steps[q.st];let t=s.txt;if(s.t==='kill')t+=` ${Math.min(q.cnt,s.n)}/${s.n}`;return t}
+function objectiveW(){const q=wq();if(q.done)return null;return stepTarget(wstep())}
+function advanceW(){const q=wq(),W=curW(),s=W.steps[q.st];q.st++;q.cnt=0;q.pre=0;if(s.on)s.on();save();buildItems();
+  const fin=q.st>=W.steps.length;say(s.dlg||[],()=>{if(fin&&!q.done){q.done=true;save();say(W.outro||[],()=>{const nx=WORLDS[WID+1];if(nx)say([['Patarimas',`Kitas pasaulis: ${nx.name} (nuo Lv ${nx.lvl[0]}). Kviesk Kinto debesėlį: Meniu → Kinto kelionė.`]])})}})}
+function worldTriggers(){if(dlg||ynOpen||P.dead||P.sleep)return;const q=wq(),W=curW();
+  if(!q.intro){q.intro=true;save();say(W.intro||[]);return}
+  if(q.done||q.st>=W.steps.length)return;const s=W.steps[q.st];
+  if(s.t==='go'&&POI[s.p]&&dist(P,POI[s.p])<95)advanceW();
+  else if(s.t==='kill'&&q.cnt>=s.n)advanceW();
+  else if(s.t==='boss'){if(q.bd[s.e])advanceW();else if(s.pre&&!q.pre){const e=enemies.find(x=>x.type===s.e);if(e&&e.eng){q.pre=1;say(s.pre)}}}}
+function worldTalk(n){const s=wstep();if(s&&s.t==='talk'&&s.n===n.id){advanceW();return true}return false}
+function interactablesW(){const L=[];if(Q.pcamp)L.push({k:'pcamp',type:'use',x:Q.pcamp.x,y:Q.pcamp.y});
+  for(const n of NPCS)if(npcVisible(n))L.push({k:'npc',type:'talk',n,x:n.x,y:n.y});for(const it of items)L.push({k:'item',type:'take',it,x:it.x,y:it.y});return L}
+function buildItemsW(){const W=curW(),q=wq();items=[];const r=rng(W.id*13+(Q.dayN||0));
+  const s=W.steps[q.st];if(s&&s.t==='take'&&POI[s.p])items.push({kind:'qitem',id:'q'+W.id+'_'+q.st,x:POI[s.p].x,y:POI[s.p].y});
+  (W.loot||[]).forEach(([x,y],i)=>{const id='L'+W.id+'_'+i;if(q.got.includes(id))return;const sp={x:T(x),y:T(y)};items.push({kind:'gear',id,loot:true,inst:genGear(W.lvl[1],i===0?'e':'r'),x:sp.x,y:sp.y})});
+  for(let i=0;i<(W.herbs||0);i++){let g=0;while(g++<200){const tx=2+Math.floor(r()*76),ty=2+Math.floor(r()*56);if([GRASS,DARK,SAND,FLOWER].includes(map[ty][tx])){items.push({kind:'herb',id:'wh'+i+'_'+(Q.dayN||0),x:T(tx),y:T(ty)});break}}}
+  items=items.filter(it=>!(it.kind==='herb'&&Q.got.includes(it.id)))}
+function gateBlockW(x,y){const W=curW(),q=wq(),tx=x/TS,ty=y/TS;for(const g of(W.gates||[])){const[a,b,c,d]=g.r;if(tx>=a&&tx<=c+1&&ty>=b&&ty<=d+1&&q.st<g.until)return{msg:()=>g.msg}}return null}
+function safeAtW(x,y){if(Q&&Q.pcamp&&Math.hypot(x-Q.pcamp.x,y-Q.pcamp.y)<4*TS)return true;if(Math.hypot(x-SPAWN.x,y-SPAWN.y)<5*TS)return true;for(const[sx,sy,r]of(curW().safe||[]))if(Math.hypot(x-T(sx),y-T(sy))<r*TS)return true;return false}
+function npcVisibleW(n){const st=wq().st;if(n.from!=null&&st<n.from)return false;if(n.to!=null&&st>=n.to)return false;if(n.day&&isNight())return false;return true}
+function spawnNPCsW(){NPCS=(curW().npcs||[]).map(d=>({...d,x:T(d.at[0]),y:T(d.at[1]),hx:T(d.at[0]),hy:T(d.at[1]),fx:0,fy:1,tg:null,wt:Math.random()*2,mv:false,li:0}))}
+
+/* ---------- world travel UI ---------- */
+let worldsOpen=false;
+function openWorlds(){if(!P)return;if(!kintoOK()){say([[G(),'Kinto debesėlio dar neturiu... Meistras Roshi jį žadėjo.']]);return}
+  if(inside||P.dead||activeBoss()){addFloat(P.x,P.y-30,'Dabar Kinto neatskris','#ffcf6a');return}
+  worldsOpen=true;closePause&&pauseOpen&&closePause();$('worldOv').style.display='flex';renderWorlds()}
+function closeWorlds(){worldsOpen=false;$('worldOv').style.display='none'}
+function renderWorlds(){const cv2=$('worldCv'),g=cv2.getContext('2d'),Wd=cv2.width=320,Hd=cv2.height=180;g.imageSmoothingEnabled=false;
+  g.fillStyle='#124e89';g.fillRect(0,0,Wd,Hd);for(let i=0;i<60;i++){g.fillStyle='#1a5a98';g.fillRect((i*53)%Wd,(i*37)%Hd,6,1)}
+  const land=[[.2,.45,.16,.22],[.38,.24,.14,.14],[.55,.25,.12,.13],[.22,.7,.08,.08],[.62,.62,.12,.12],[.42,.1,.12,.08],[.74,.4,.11,.13],[.86,.62,.08,.1],[.62,.83,.1,.08],[.86,.18,.1,.12],[.4,.88,.12,.08]];
+  for(const[x,y,rx,ry]of land){g.fillStyle='#e6d4a2';g.beginPath();g.ellipse(x*Wd,y*Hd,rx*Wd+3,ry*Hd+3,0,0,7);g.fill();g.fillStyle='#63c74d';g.beginPath();g.ellipse(x*Wd,y*Hd,rx*Wd,ry*Hd,0,0,7);g.fill()}
+  g.setLineDash([3,4]);g.strokeStyle='#fff8';g.lineWidth=1;g.beginPath();for(let i=1;i<=11;i++){const p=WORLDS[i].pos;if(i===1)g.moveTo(p[0]*Wd,p[1]*Hd);else g.lineTo(p[0]*Wd,p[1]*Hd)}g.stroke();g.setLineDash([]);
+  for(let i=1;i<=11;i++){const p=WORLDS[i].pos,x=p[0]*Wd,y=p[1]*Hd,un=worldUnlocked(i),dn=i===1?Q.s>=14:worldDone(i);g.fillStyle='#181425';g.beginPath();g.arc(x,y,8,0,7);g.fill();g.fillStyle=i===WID?'#feae34':dn?'#63c74d':un?'#2ce8f5':'#5a6988';g.beginPath();g.arc(x,y,6,0,7);g.fill();
+    g.fillStyle='#181425';g.font='bold 8px monospace';g.textAlign='center';g.fillText(String(i),x,y+3)}
+  if(Math.floor(performance.now()/400)%2){const p=WORLDS[WID].pos;g.drawImage(SPX.cloud,p[0]*Wd-10,p[1]*Hd-22,20,9)}
+  let h='';for(let i=1;i<=11;i++){const W=WORLDS[i],un=worldUnlocked(i),dn=i===1?Q.s>=14:worldDone(i),cur=i===WID,why=worldLockWhy(i),el=eliteOn(i);
+    h+=`<div class="inv" style="${un?'':'opacity:.55'}"><b style="width:26px;text-align:center;color:${dn?'#63c74d':'#feae34'}">${i}</b><div class="d"><b>${W.name} <span class="q">Lv ${W.lvl[0]}–${W.lvl[1]}</span></b><span>${W.sub}${dn?' · ✔ įveikta':''}${el?' · ★ sustiprėję priešai':''}${!un?' · 🔒 '+why:''}</span></div>${cur?'<span class="small">Čia esi</span>':un?`<button class="big" style="width:auto;margin:0" data-go="${i}">Skristi</button>`:''}</div>`}
+  $('worldList').innerHTML=h;$('worldList').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>travelTo(+b.dataset.go));}
+function renderWorldsMapOnly(){if(!worldsOpen)return;const keep=$('worldList').scrollTop;renderWorlds();$('worldList').scrollTop=keep}
+
+/* ---------- Kamehameha ---------- */
+function fireKame(){if(!Q.kame||paused()||inside||P.kiT>0)return;const cost=20;if(P.ki<cost){addFloat(P.x,P.y-26,'Trūksta ki','#7cc8ff');return}
+  P.ki-=cost;P.lastKiUse=time;P.kiT=.55;P.atkType='palm';P.atkDur=P.atkT=.4;sfx('kame');shake=Math.max(shake,.12);
+  shots.push({x:P.x+P.fx*16,y:P.y-8+P.fy*14,vx:P.fx*380,vy:P.fy*380,t:1.3,enemy:false,dmg:Math.round(st('kip')*2+strDmg()*1.2+ri(2,6)),r:11})}
+
+/* ---------- Equipment 2.0 ---------- */
+const RAR={c:{n:'Paprastas',col:'#c0cbdc',m:1,aff:0},u:{n:'Neįprastas',col:'#63c74d',m:1.15,aff:1},r:{n:'Retas',col:'#2ce8f5',m:1.35,aff:2},e:{n:'Epinis',col:'#c77dff',m:1.6,aff:3},l:{n:'Legendinis',col:'#feae34',m:2,aff:3}};
+const GB2={rankos:[['Tvarsčiai','gWrap'],['Apyrankė','gBand'],['Pirštinės','gGlove']],kunas:[['Liemenė','gVest'],['Kimono','gGVest'],['Kailis','gFur']],kojos:[['Sandalai','gSandal'],['Batai','gBoot']],amul:[['Moneta','gCoin'],['Karoliai','gNeck'],['Žvynas','gScale']]};
+const GMAIN={rankos:'str',kunas:'def',kojos:'agi',amul:'lck'};
+const SVAL={str:il=>1+il*.35,def:il=>1+il*.3,agi:il=>1+il*.09,hp:il=>6+il*2.5,lck:il=>1+il*.15,kir:il=>.6+il*.05,kip:il=>1+il*.28,xp:il=>3+il*.35,crtp:il=>1+il*.07};
+const GUNI={vamp:'Gyvybės siurbimas (4% žalos)',regen:'Regeneracija +1,5 HP/s',swift:'+12% smūgių greitis',kihit:'+1,5 ki už smūgį'};
+const GLEG=[{n:'Roshi vėžlio kriauklė',slot:'kunas',ic:'gFur',b:{def:1.4,hp:1.4,xp:1.3},neg:{agi:3},u:'regen'},{n:'Svarmenų apyrankės',slot:'rankos',ic:'gBand',b:{str:1.9},neg:{agi:2},u:'kihit'},{n:'Karino ąsotėlis',slot:'amul',ic:'gScale',b:{kip:1.6,kir:1.6,xp:.7},u:'regen'},{n:'Kinto plunksna',slot:'kojos',ic:'gBoot',b:{agi:1.7,lck:1},u:'swift'},{n:'Kame kimono',slot:'kunas',ic:'gGVest',b:{str:.9,def:1,hp:1},u:'vamp'}];
+let gUid=Date.now()%100000;
+function genGear(il,rar,slot){il=Math.max(1,il|0);const R=RAR[rar]||RAR.c;let inst;
+  if(rar==='l'){const L=GLEG[ri(0,GLEG.length-1)];const b={};for(const k in L.b)b[k]=Math.max(1,Math.round(SVAL[k](il)*L.b[k]*R.m));for(const k in(L.neg||{}))b[k]=(b[k]||0)-L.neg[k];inst={n:L.n,slot:L.slot,ic:L.ic,b,uni:L.u}}
+  else{slot=slot||Object.keys(GB2)[ri(0,3)];const[bn,ic]=GB2[slot][ri(0,GB2[slot].length-1)];const main=GMAIN[slot],b={};b[main]=Math.max(1,Math.round(SVAL[main](il)*R.m));
+    const pool=Object.keys(SVAL).filter(k=>k!==main);for(let i=0;i<R.aff;i++){const k=pool.splice(ri(0,pool.length-1),1)[0];b[k]=Math.max(1,Math.round(SVAL[k](il)*R.m*.55))}
+    inst={n:bn,slot,ic,b};if(rar==='e')inst.uni=Object.keys(GUNI)[ri(0,3)]}
+  return Object.assign(inst,{u:'g'+(gUid++),r:rar,il,req:Math.max(1,il-3)})}
+function rollRar(boss){const lk=st('lck'),x=Math.random();if(x<(boss?.04:.002)*(1+lk*.05))return'l';if(x<(boss?.32:.016)*(1+lk*.04))return'e';if(boss||x<.08*(1+lk*.03))return'r';if(x<.3)return'u';return'c'}
+function fromDef(id){const D=GEAR[id];if(!D)return null;return{u:'g'+(gUid++),base:id,n:D.n,slot:D.slot,ic:D.ic,b:{...D.b},r:D.src&&ETYPES[D.src]&&ETYPES[D.src].boss?'r':D.src?'u':'r',il:1,req:1}}
+function gearG(){if(!P.gear)P.gear={eq:{},inv:[]};const g=P.gear;g.inv=g.inv.map(x=>typeof x==='string'?fromDef(x):x).filter(Boolean);for(const k in g.eq)if(typeof g.eq[k]==='string')g.eq[k]=fromDef(g.eq[k]);return g}
+function gearB(k){let n=0;const g=gearG();for(const sl in g.eq){const it=g.eq[sl];if(it&&it.b)n+=it.b[k]||0}return n}
+function gearUni(k){const g=gearG();for(const sl in g.eq){const it=g.eq[sl];if(it&&it.uni===k)return true}return false}
+function gearTxt(x){const it=typeof x==='string'?fromDef(x):x;if(!it)return'';const b=it.b;let t=Object.keys(b).map(k=>(b[k]>=0?'+':'')+b[k]+(k==='xp'||k==='crtp'?GB_N[k]:' '+GB_N[k])).join(', ');if(it.uni)t+=' · ✦ '+GUNI[it.uni];return t}
+function equip(u){const g=gearG(),it=g.inv.find(x=>x.u===u);if(!it)return;if(P.lvl<(it.req||1)){addFloat(P.x,P.y-30,'Reikia Lv '+it.req,'#ff9a6a');return}if(g.eq[it.slot])unequip(it.slot,true);g.eq[it.slot]=it;g.inv=g.inv.filter(x=>x!==it);P.maxHp+=it.b.hp||0;P.hp+=it.b.hp||0;sfx('pickup');save()}
+function unequip(sl,quiet){const g=gearG(),it=g.eq[sl];if(!it)return;g.eq[sl]=null;g.inv.push(it);P.maxHp-=it.b.hp||0;P.hp=Math.min(P.hp,P.maxHp);if(!quiet){sfx('blip');save()}}
+function ownsGear(id){const g=gearG();return g.inv.some(x=>x.base===id)||Object.values(g.eq).some(x=>x&&x.base===id)}
+function giveGear(id,x,y){if(ownsGear(id)||items.some(i=>i.inst&&i.inst.base===id))return;const sp=reachSpot(x,y);items.push({kind:'gear',id:'g_'+id,inst:fromDef(id),x:sp.x,y:sp.y})}
+function dropGear(inst,x,y){const sp=reachSpot(x,y);items.push({kind:'gear',id:'d'+inst.u,inst,x:sp.x,y:sp.y})}
+function pickGear(it){const g=gearG();if(g.inv.length>=40){addFloat(P.x,P.y-30,'Kuprinė pilna!','#ff9a6a');items.push(it);return}
+  if(it.loot)wq().got.push(it.id);g.inv.push(it.inst);const R=RAR[it.inst.r]||RAR.c;sfx(it.inst.r==='l'||it.inst.r==='e'?'level':'pickup');addFloat(P.x,P.y-30,it.inst.n,R.col);
+  if(it.inst.r==='l')floats.push({x:P.x,y:P.y-60,txt:'LEGENDINIS!',col:'#feae34',t:1.6,big:true});
+  if(!Q.gearTip){Q.gearTip=1;pendingMsg.push([['Patarimas',`Radai ekipuotės daiktą: ${it.inst.n}. Užsidėk jį: Inventorius → Ekipuotė.`]])}save()}
+function renderGear(){
+  document.querySelectorAll('#invTabs button').forEach(b=>b.classList.toggle('on',b.dataset.it==='gear'));const g=gearG();let h='';
+  const row=(it,btns)=>{const R=RAR[it.r]||RAR.c;return`<div class="inv"><img src="${ICON[it.ic]||ICON.icBag}" style="box-shadow:0 0 0 2px ${R.col}"><div class="d"><b style="color:${R.col}">${it.n} <span class="q">Lv ${it.il||1}${it.req>P.lvl?' · reikia Lv '+it.req:''}</span></b><span>${gearTxt(it)}</span></div>${btns}</div>`};
+  for(const[sl,nm]of SLOTS_G){const it=g.eq[sl];h+=it?row(it,`<button class="big" style="width:auto;margin:0" data-uneq="${sl}">Nusiimti</button>`):`<div class="inv"><img src="${ICON.icBag}" style="opacity:.25"><div class="d"><b>${nm}: —</b><span>Tuščia</span></div></div>`}
+  h+=`<div class="row" style="border:0;padding-top:8px"><b style="color:#feae34">KUPRINĖJE ${g.inv.length}/40</b></div>`;
+  if(!g.inv.length)h+='<div class="small" style="padding:8px 0">Daiktų nėra. Jie krenta iš priešų (dažniau – su sėkme); bosai visada palieka retą ar geresnį daiktą.</div>';
+  const order={l:0,e:1,r:2,u:3,c:4};for(const it of[...g.inv].sort((a,b)=>(order[a.r]-order[b.r])||(b.il-a.il))){const cur=g.eq[it.slot];h+=row(it,`<span style="display:flex;flex-direction:column;gap:4px"><button class="big" style="width:auto;margin:0" data-eq="${it.u}" ${it.req>P.lvl?'disabled':''}>Užsidėti</button><button style="font-size:10px" data-drop="${it.u}">Išmesti</button></span>`)}
+  h+=`<div class="small" style="padding-top:6px">Retumas: <span style="color:${RAR.c.col}">paprastas</span> · <span style="color:${RAR.u.col}">neįprastas</span> · <span style="color:${RAR.r.col}">retas</span> · <span style="color:${RAR.e.col}">epinis</span> · <span style="color:${RAR.l.col}">legendinis</span>. Greitis greitina smūgius (dabar +${Math.round((1/aspd()-1)*100)}%).</div>`;
+  $('invRows').innerHTML=h;
+  $('invRows').querySelectorAll('[data-eq]').forEach(b=>b.onclick=()=>{equip(b.dataset.eq);renderGear()});
+  $('invRows').querySelectorAll('[data-uneq]').forEach(b=>b.onclick=()=>{unequip(b.dataset.uneq);renderGear()});
+  $('invRows').querySelectorAll('[data-drop]').forEach(b=>b.onclick=()=>{const g2=gearG();g2.inv=g2.inv.filter(x=>x.u!==b.dataset.drop);sfx('blip');save();renderGear()});
+}
+function aspd(){return(1/(1+Math.min(.4,st('agi')*.012)))*(gearUni('swift')?.89:1)}
 
 /* ================= BOOT ================= */
 let last=performance.now();
