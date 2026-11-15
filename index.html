@@ -60,8 +60,9 @@ body.onTitle #hud,body.onTitle .tbtn,body.onTitle .cbtn,body.onTitle #clock,body
 #dialog .txt{text-shadow:1px 1px 0 #181425}
 #dialog .nxt{position:absolute;right:12px;bottom:4px;font-size:12px;color:#feae34;animation:bob .6s steps(2) infinite}
 @keyframes bob{50%{transform:translateY(-3px)}}
+.xbtn{position:fixed;top:10px;right:10px;width:40px;height:40px;z-index:30;background:#e43b44!important;color:#fff!important;font:bold 22px 'Pixelify Sans',monospace!important;margin:0!important;border:0;box-shadow:0 0 0 3px #181425,inset -3px -3px 0 rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
 .ov{position:fixed;inset:0;background:rgba(24,20,37,.85);display:none;align-items:center;justify-content:center;z-index:10}
-.card{padding:18px;width:min(88vw,400px);max-height:86vh;overflow:auto;box-sizing:border-box}
+.card{padding:18px;width:min(88vw,400px);max-height:86vh;overflow:auto;box-sizing:border-box;touch-action:pan-y;-webkit-overflow-scrolling:touch}
 .card h2{margin:0 0 8px;color:#feae34;font-size:20px;text-shadow:2px 2px 0 #181425}
 .row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:2px dashed #3a4466}
 .row button,.big{font-family:inherit;background:#feae34;color:#181425;border:0;font-weight:700;padding:7px 12px;font-size:14px;cursor:pointer;box-shadow:inset 0 -3px 0 #c76a1a,inset 0 3px 0 #ffe08a}
@@ -1745,7 +1746,8 @@ $('closeMenu').onclick=()=>{menuOpen=false;$('menu').style.display='none'};
 function openInv(){if(!P)return;invOpen=true;renderInv();$('invOv').style.display='flex'}
 function closeInv(){invOpen=false;$('invOv').style.display='none'}
 document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('button');if(!b||b.disabled||b.dataset.k||b.dataset.sk||b.dataset.fist)return;try{auInit()}catch(_){}sfx('click')},true);
-$('worldClose').onclick=closeWorlds;$('pmTravel').onclick=()=>{closePause();openWorlds()};$('endKinto').onclick=()=>{$('endOv').style.display='none';openWorlds()};bindBtn('bK',fireKame,()=>{});bindBtn('bSw',cycleB,()=>{});
+$('worldClose').onclick=closeWorlds;
+for(const[ov,fn]of[['menu',()=>$('closeMenu').click()],['invOv',closeInv],['mapOv',()=>$('closeMap').click()],['sndOv',()=>$('closeSnd').click()],['sprOv',()=>$('closeSpr').click()],['worldOv',closeWorlds],['pauseOv',closePause],['endOv',()=>$('endClose').click()]]){const x=document.createElement('button');x.className='xbtn';x.textContent='✕';x.setAttribute('aria-label','Uždaryti');const h=e=>{e.preventDefault();e.stopPropagation();sfx('click');fn()};x.addEventListener('click',h);x.addEventListener('touchend',h);$(ov).appendChild(x)}$('pmTravel').onclick=()=>{closePause();openWorlds()};$('endKinto').onclick=()=>{$('endOv').style.display='none';openWorlds()};bindBtn('bK',fireKame,()=>{});bindBtn('bSw',cycleB,()=>{});
 $('ynYes').onclick=()=>ynDone(0);$('ynNo').onclick=()=>ynDone(1);
 $('invBtn').onclick=openInv;$('closeInv').onclick=closeInv;
 let mapSeen='';function mapLoop(){if(!mapOpen)return;renderMinimap();requestAnimationFrame(mapLoop)}
@@ -3136,7 +3138,7 @@ function doNew(){auInit();try{localStorage.removeItem(SKEY)}catch(e){}$('confirm
 $('newBtn').onclick=()=>{const sv=load();if(!sv){doNew();return}$('confirmTxt').textContent=`Turi išsaugotą žaidimą (Lv ${sv.P.lvl}, žaista ~${Math.round((sv.Q.play||0)/60)} min). Pradėjus iš naujo, jis bus ištrintas visam laikui.`;$('confirmOv').style.display='flex'};
 $('confYes').onclick=doNew;$('confNo').onclick=()=>{$('confirmOv').style.display='none'};
 requestAnimationFrame(loop);
-const GAME_VER='1.3.0';
+const GAME_VER='1.3.1';
 $('verTxt').textContent='Versija '+GAME_VER;
 const onPages=/github\.io$/.test(location.hostname);
 async function checkUpdate(manual){
